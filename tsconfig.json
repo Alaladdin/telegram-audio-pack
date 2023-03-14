@@ -6,16 +6,23 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es2017",
+    "target": "ESNext",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
-    "strictNullChecks": false,
-    "noImplicitAny": false,
+    "strict": true,
+    "strictPropertyInitialization": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@root/*": ["./*"],
+      "@/*": ["src/*"],
+      "@entities": ["src/shared/entities"],
+      "@types": ["src/shared/types"],
+      "@constants": ["src/shared/constants"]
+    }
   }
 }

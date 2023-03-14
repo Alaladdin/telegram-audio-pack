@@ -1,0 +1,6 @@
+{
+  "start": "init bot",
+  "list": "available audios list",
+  "stats": "usage stats",
+  "debug": "debug info"
+}
