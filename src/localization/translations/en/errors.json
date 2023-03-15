@@ -1,0 +1,4 @@
+{
+  "base_error": "Error: {message}",
+  "not_admin": "You are not admin \uD83D\uDE21"
+}

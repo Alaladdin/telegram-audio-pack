@@ -1,6 +1,6 @@
 {
   "start": "init bot",
-  "list": "available audios list",
+  "list": "audios list",
   "stats": "usage stats",
   "debug": "debug info"
 }

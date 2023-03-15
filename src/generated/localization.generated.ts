@@ -8,5 +8,12 @@ export type I18nTranslations = {
         "stats": string;
         "debug": string;
     };
+    "errors": {
+        "base_error": string;
+        "not_admin": string;
+    };
+    "replies": {
+        "greeting": string;
+    };
 };
 export type I18nPath = Path<I18nTranslations>;
