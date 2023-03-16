@@ -2,5 +2,6 @@
   "start": "init bot",
   "list": "audios list",
   "stats": "usage stats",
+  "settings": "bot settings",
   "debug": "debug info"
 }

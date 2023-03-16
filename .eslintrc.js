@@ -25,5 +25,40 @@ module.exports = {
 
     // PRETTIER
     'prettier/prettier': ['error', { printWidth: 120 }],
+
+    // CUSTOM
+    'padding-line-between-statements': [
+      'error',
+      {
+        blankLine: 'always',
+        prev: '*',
+        next: 'return',
+      },
+      {
+        blankLine: 'always',
+        prev: ['const', 'let'],
+        next: '*',
+      },
+      {
+        blankLine: 'any',
+        prev: ['const', 'let'],
+        next: ['const', 'let'],
+      },
+      {
+        blankLine: 'always',
+        prev: ['if', 'case', 'default'],
+        next: '*',
+      },
+      {
+        blankLine: 'always',
+        prev: '*',
+        next: ['if', 'case', 'default'],
+      },
+      {
+        blankLine: 'any',
+        prev: ['if', 'case', 'default'],
+        next: ['if', 'case', 'default'],
+      },
+    ],
   },
 };

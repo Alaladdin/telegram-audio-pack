@@ -2,10 +2,17 @@
 
 import { Path } from "nestjs-i18n";
 export type I18nTranslations = {
+    "base": {
+        "save": string;
+        "discard": string;
+        "yes": string;
+        "no": string;
+    };
     "commands": {
         "start": string;
         "list": string;
         "stats": string;
+        "settings": string;
         "debug": string;
     };
     "errors": {
