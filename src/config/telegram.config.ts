@@ -7,10 +7,10 @@ import { I18nTranslations } from '@/generated/localization.generated';
 import { baseMiddleware, i18nMiddleware } from '@/modules/telegram/middlewares';
 
 export const getTelegramConfig = (
-  configService: ConfigService,
-  i18n: I18nService<I18nTranslations>,
+    configService: ConfigService,
+    i18n: I18nService<I18nTranslations>,
 ): TelegrafModuleOptions => ({
-  botName: BOT_NAME,
-  token: configService.get('BOT_TOKEN') || '',
-  middlewares: [useNewReplies(), i18nMiddleware(i18n), baseMiddleware],
+    botName: BOT_NAME,
+    token: configService.get('BOT_TOKEN') || '',
+    middlewares: [useNewReplies(), i18nMiddleware(i18n), baseMiddleware],
 });
