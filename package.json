@@ -1,9 +1,10 @@
 {
   "name": "telegram-audio-pack",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
   "private": true,
+  "description": "Telegram audio pack, like sticker pack",
+  "author": "Alaladdin",
+  "keywords": ["nestjs", "typesript", "telegraf", "mongodb", "typegoose"],
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
