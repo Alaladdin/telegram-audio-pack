@@ -5,6 +5,8 @@ export type I18nTranslations = {
     "base": {
         "save": string;
         "discard": string;
+        "saved": string;
+        "discarded": string;
         "yes": string;
         "no": string;
     };

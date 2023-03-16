@@ -1,6 +1,6 @@
 import { prop } from '@typegoose/typegoose';
 
-export class TelegramUser {
+export class UserEntity {
     @prop({ required: true })
     id: number;
 

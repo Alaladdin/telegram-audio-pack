@@ -1,6 +1,6 @@
 import { prop } from '@typegoose/typegoose';
 
-export class TelegramAudio {
+export class TelegramAudioEntity {
     @prop({ required: true })
     fileId: string;
 
