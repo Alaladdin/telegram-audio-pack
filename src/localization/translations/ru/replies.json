@@ -1,3 +1,4 @@
 {
-  "greeting": "Приветствую, {name}"
+  "greeting": "Приветствую, {name}",
+  "settings": "Настройки"
 }

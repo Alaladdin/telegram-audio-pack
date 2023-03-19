@@ -23,6 +23,7 @@ export type I18nTranslations = {
     };
     "replies": {
         "greeting": string;
+        "settings": string;
     };
 };
 export type I18nPath = Path<I18nTranslations>;
