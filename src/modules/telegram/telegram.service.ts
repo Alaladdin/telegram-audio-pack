@@ -16,6 +16,8 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class TelegramService {
+    private isProd = true;
+
     constructor(
         @InjectModel(AudioEntity) private readonly audioRepository: ModelType<AudioEntity>,
         @InjectModel(UserEntity) private readonly userRepository: ModelType<UserEntity>,
@@ -23,7 +25,9 @@ export class TelegramService {
         private readonly ffmpegService: FfmpegService,
         private readonly httpService: HttpService,
         private readonly i18n: I18nService<I18nTranslations>,
-    ) {}
+    ) {
+        this.isProd = this.configService.get('NODE_ENV') === 'production';
+    }
 
     async setBotCommands(bot: Telegraf<Context>) {
         const languages = this.i18n.getSupportedLanguages();
@@ -48,14 +52,13 @@ export class TelegramService {
         const { botInfo, from, chat } = ctx;
         const fullName = [from?.first_name, from?.last_name].join(' ') || 'UNKNOWN';
         const appVersion = this.configService.get('npm_package_version');
-        const isProduction = this.configService.get('NODE_ENV') === 'production';
         const message = [
             `\\# *bot*`,
             `\`version: ${appVersion}\``,
             `\`name: ${botInfo.first_name}\``,
             `\`username: @${botInfo.username}\``,
             `\`adminsCount: ${ADMINS_IDS.length}\``,
-            `\`isProduction: ${isProduction}\``,
+            `\`isProduction: ${this.isProd}\``,
 
             `\n\\# *chat*`,
             `\`id: ${chat?.id}\``,
@@ -113,12 +116,12 @@ export class TelegramService {
             ? this.getVoiceData(replyMessage.voice)
             : this.getAudioData(replyMessage.audio);
 
-        const oggFile = await this.getFileData<typeof audio>({
-            audio,
+        const fileBuffer = await this.ffmpegService.getCleanAudio({
+            readable: audioFile.data,
             title: replyMessage.caption || audioData.title,
-            fileStream: audioFile.data,
         });
-        const { voice: newVoice } = await ctx.replyWithVoice({ source: oggFile.fileBuffer });
+
+        const { voice: newVoice } = await ctx.replyWithVoice({ source: fileBuffer });
 
         console.log(audioData, replyMessage.voice, replyMessage.audio);
 
@@ -130,7 +133,7 @@ export class TelegramService {
                 mimeType: newVoice.mime_type,
                 duration: newVoice.duration,
             },
-            content: oggFile.fileBuffer,
+            content: fileBuffer,
             name: replyMessage.caption || audioData.title,
             authoredBy: {
                 id: author.id,
@@ -142,19 +145,7 @@ export class TelegramService {
             },
         });
 
-        await ctx.deleteMessage(query.message?.message_id);
-        await ctx.answerCbQuery();
-    }
-
-    private async getFileData<T extends Audio | Voice>(data: SaveAudioFile<T>) {
-        const { audio, title, fileStream } = data;
-
-        const fileBuffer = await this.ffmpegService.getOggFile(fileStream, { title: audio.file_id });
-
-        return {
-            fileName: title,
-            fileBuffer,
-        };
+        return ctx.editMessageText(`\`${ctx.$t('base.saved')}\``, { parse_mode: 'MarkdownV2' });
     }
 
     private getAudioData(audio: Audio) {
@@ -177,7 +168,10 @@ export class TelegramService {
     async onInlineQuery(ctx: Context) {
         const queryData = ctx.inlineQuery;
         const audios = await this.audioRepository
-            .find({ name: { $regex: queryData?.query, $options: 'i' } })
+            .find({
+                name: { $regex: queryData?.query, $options: 'i' },
+                deletedAt: null,
+            })
             .sort('-usedTimes')
             .lean();
 
@@ -190,7 +184,7 @@ export class TelegramService {
                 voice_duration: audio.telegramMetadata.duration,
             })),
             {
-                cache_time: 0, // check dev
+                cache_time: this.isProd ? 0 : 300,
             },
         );
     }

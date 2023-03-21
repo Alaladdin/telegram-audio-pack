@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as ffmpeg from 'fluent-ffmpeg';
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
-import { Metadata } from './interfaces';
+import { getCleanAudioOptions } from './interfaces';
 import * as stream from 'stream';
 import { flatten } from 'lodash';
 
@@ -11,9 +11,9 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 export class FfmpegService {
     private logger = new Logger(FfmpegService.name);
 
-    async getOggFile(readable: stream.Readable, metadata: Metadata): Promise<Buffer> {
+    async getCleanAudio(options: getCleanAudioOptions): Promise<Buffer> {
         return new Promise(async (resolve) => {
-            const fileStream = await this.getOggBufferStream(readable, metadata);
+            const fileStream = await this.getAudioBufferStream(options);
             const buffer: Buffer[] = [];
 
             fileStream.on('data', function (chunk: Buffer) {
@@ -26,31 +26,30 @@ export class FfmpegService {
         });
     }
 
-    private async getOggBufferStream(readable: stream.Readable, metadata: Metadata): Promise<stream.PassThrough> {
+    private async getAudioBufferStream({ readable, title }: getCleanAudioOptions): Promise<stream.PassThrough> {
         const bufferStream = new stream.PassThrough();
         const outputOptions = flatten([
             ['-map_metadata', '-1'],
-            ['-metadata', `title="${metadata.title}"`],
+            ['-metadata', `title="${title}"`],
         ]);
 
         return new Promise((resolve, reject) => {
             ffmpeg(readable)
                 .audioCodec('opus')
-                // .format('ogg')
                 .outputFormat('ogg')
                 .outputOptions(outputOptions)
                 .on('start', (command: string) => {
-                    this.logger.log(`Command executed: ${command}`);
+                    this.logger.log(`Executed command: ${command}`);
                 })
                 .on('progress', (progress) => {
                     this.logger.verbose('Progress: ', progress);
                 })
                 .on('end', () => {
-                    this.logger.log('Done');
+                    this.logger.log('Command executed successful');
                     resolve(bufferStream);
                 })
                 .on('error', (e) => {
-                    this.logger.error(`Error: ${e}`);
+                    this.logger.error(`Command execution error: ${e}`);
                     reject(e);
                 })
                 .writeToStream(bufferStream, { end: true });
