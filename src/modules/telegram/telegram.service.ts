@@ -4,7 +4,7 @@ import { I18nTranslations } from '@/generated/localization.generated';
 import { map } from 'lodash';
 import { Audio, Voice } from 'typegram';
 import { Markup, Telegraf } from 'telegraf';
-import { AudioContext, CallbackQueryContext, Context, SaveAudioFile } from './interfaces';
+import { AudioContext, CallbackQueryContext, Context } from './interfaces';
 import { ADMINS_IDS, BOT_COMMANDS_LIST } from './telegram.constants';
 import { InjectModel } from 'nestjs-typegoose';
 import { ModelType } from '@typegoose/typegoose/lib/types';
@@ -43,9 +43,9 @@ export class TelegramService {
     }
 
     async onStartCommand(ctx: Context) {
-        const message = ctx.$t('replies.greeting', { args: { name: ctx.username } });
+        const message = ctx.$t('replies.greeting', { args: { name: ctx.displayName } });
 
-        await ctx.replyWithMarkdownV2(`\`${message}\``);
+        await ctx.$replyWithMarkdown(message);
     }
 
     async onDebugCommand(ctx: Context) {
@@ -86,7 +86,7 @@ export class TelegramService {
             ],
         ]);
 
-        await ctx.replyWithMarkdownV2(`\`${message}\``, keyboard);
+        await ctx.$replyWithMarkdown(message, keyboard);
     }
 
     async onCallbackQuery(ctx: CallbackQueryContext) {
@@ -122,8 +122,6 @@ export class TelegramService {
         });
 
         const { voice: newVoice } = await ctx.replyWithVoice({ source: fileBuffer });
-
-        console.log(audioData, replyMessage.voice, replyMessage.audio);
 
         await this.audioRepository.create({
             telegramMetadata: {

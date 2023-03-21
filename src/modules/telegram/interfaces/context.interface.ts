@@ -4,10 +4,13 @@ import { PathImpl2 } from '@nestjs/config';
 import { TranslateOptions } from 'nestjs-i18n/dist/services/i18n.service';
 import { CallbackQuery, Update, Message, Audio, Voice } from 'typegram';
 import { Readable } from 'stream';
+import { ExtraReplyMessage } from 'telegraf/src/telegram-types';
 
 interface BaseContext {
-    username: string;
+    displayName: string;
+    isAdmin: boolean;
     $t: (key: PathImpl2<I18nTranslations>, options?: TranslateOptions) => string;
+    $replyWithMarkdown: (text: string, extra?: ExtraReplyMessage) => ReturnType<tgContext['replyWithMarkdownV2']>;
 }
 
 export interface AudioContext extends tgContext<Update.MessageUpdate<Message.AudioMessage>>, BaseContext {}

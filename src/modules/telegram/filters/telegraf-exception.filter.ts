@@ -9,6 +9,6 @@ export class TelegrafExceptionFilter implements ExceptionFilter {
         const ctx = telegrafHost.getContext<Context>();
         const errorMessage = ctx.$t('errors.base_error', { args: { message: exception.message } });
 
-        await ctx.replyWithMarkdownV2(`\`${errorMessage}\``);
+        await ctx.reply(`\`${errorMessage}\``);
     }
 }
