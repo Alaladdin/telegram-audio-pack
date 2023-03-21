@@ -12,9 +12,8 @@ export type I18nTranslations = {
     };
     "commands": {
         "start": string;
-        "list": string;
-        "stats": string;
-        "settings": string;
+        "top": string;
+        "top_personal": string;
         "debug": string;
     };
     "errors": {
@@ -23,7 +22,6 @@ export type I18nTranslations = {
     };
     "replies": {
         "greeting": string;
-        "settings": string;
     };
 };
 export type I18nPath = Path<I18nTranslations>;

@@ -1,8 +1,7 @@
-import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 import { modelOptions, prop } from '@typegoose/typegoose';
 import { getDefaultDatabaseSchemaOptions } from '@/config';
-import { TelegramUser } from './telegram-user.entity';
-import { TelegramAudio } from './telegram-audio';
+import { UserEntity } from './user.entity';
+import { TelegramAudioEntity } from '@/shared/entities/telegram-audio.entity';
 
 @modelOptions({
     schemaOptions: {
@@ -10,18 +9,27 @@ import { TelegramAudio } from './telegram-audio';
         ...getDefaultDatabaseSchemaOptions(),
     },
 })
-export class AudioEntity extends TimeStamps {
-    @prop({ type: () => TelegramAudio, _id: false, required: true })
-    telegramMetadata: TelegramAudio;
-
+export class AudioEntity {
     @prop({ uniq: true, required: true })
     name: string;
 
-    @prop({ type: () => TelegramUser, _id: false, required: true })
-    authoredBy: TelegramUser;
+    @prop({ uniq: true, required: true })
+    content: Buffer;
 
-    @prop({ type: () => TelegramUser, _id: false, required: true })
-    createdBy: TelegramUser;
+    @prop({ type: () => TelegramAudioEntity, _id: false, required: true })
+    telegramMetadata: TelegramAudioEntity;
+
+    @prop({ type: () => UserEntity, _id: false, required: true })
+    authoredBy: UserEntity;
+
+    @prop({ type: () => UserEntity, _id: false, required: true })
+    createdBy: UserEntity;
+
+    @prop({ default: null })
+    deletedAt: UserEntity;
+
+    @prop({ type: () => UserEntity, _id: false, default: null })
+    deletedBy: Date;
 
     @prop({ default: 0 })
     usedTimes: number;

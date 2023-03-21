@@ -1,7 +1,6 @@
 {
   "start": "init bot",
-  "list": "audios list",
-  "stats": "usage stats",
-  "settings": "bot settings",
+  "top": "top audios",
+  "top_personal": "your top audios",
   "debug": "debug info"
 }
