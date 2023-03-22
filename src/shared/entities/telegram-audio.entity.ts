@@ -1,7 +1,7 @@
 import { prop } from '@typegoose/typegoose';
 
 export class TelegramAudioEntity {
-    @prop({ required: true })
+    @prop({ uniq: true })
     fileId: string;
 
     @prop({ uniq: true, required: true })

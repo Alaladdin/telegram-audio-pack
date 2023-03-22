@@ -1,7 +1,8 @@
 import { modelOptions, prop } from '@typegoose/typegoose';
 import { getDefaultDatabaseSchemaOptions } from '@/config';
-import { UserEntity } from './user.entity';
-import { TelegramAudioEntity } from '@/shared/entities/telegram-audio.entity';
+import { UserEntity } from '@/modules/user/entities/user.entity';
+import { TelegramAudioEntity } from './telegram-audio.entity';
+import { BaseEntity } from './base.entity';
 
 @modelOptions({
     schemaOptions: {
@@ -9,7 +10,7 @@ import { TelegramAudioEntity } from '@/shared/entities/telegram-audio.entity';
         ...getDefaultDatabaseSchemaOptions(),
     },
 })
-export class AudioEntity {
+export class AudioEntity extends BaseEntity {
     @prop({ uniq: true, required: true })
     name: string;
 
