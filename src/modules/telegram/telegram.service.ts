@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import { I18nTranslations } from '@/generated/localization.generated';
-import { map } from 'lodash';
+import { map } from '@utils';
 import { Audio, Voice } from 'typegram';
 import { Markup, Telegraf } from 'telegraf';
 import { AudioContext, CallbackQueryContext, Context } from './interfaces';

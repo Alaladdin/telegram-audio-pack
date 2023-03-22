@@ -3,7 +3,7 @@ import * as ffmpeg from 'fluent-ffmpeg';
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import { getCleanAudioOptions } from './interfaces';
 import * as stream from 'stream';
-import { flatten } from 'lodash';
+import { flatten } from '@utils';
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 

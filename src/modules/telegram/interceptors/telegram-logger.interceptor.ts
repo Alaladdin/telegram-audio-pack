@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { chain } from 'lodash';
+import { chain } from '@utils';
 import { TelegrafExecutionContext } from 'nestjs-telegraf';
 import { Context } from '@/modules/telegram/interfaces';
 
