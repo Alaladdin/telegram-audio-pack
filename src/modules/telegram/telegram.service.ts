@@ -182,7 +182,7 @@ export class TelegramService {
                 voice_duration: audio.telegramMetadata.duration,
             })),
             {
-                cache_time: this.isProd ? 0 : 300,
+                cache_time: this.isProd ? 300 : 0,
             },
         );
     }
