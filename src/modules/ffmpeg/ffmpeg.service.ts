@@ -42,7 +42,7 @@ export class FfmpegService {
                     this.logger.log(`Executed command: ${command}`);
                 })
                 .on('progress', (progress) => {
-                    this.logger.verbose('Progress: ', progress);
+                    this.logger.debug('Progress: ', progress);
                 })
                 .on('end', () => {
                     this.logger.log('Command executed successful');

@@ -2,7 +2,7 @@ import { Logger, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { InjectBot, Update, Command, On } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 import { AudioContext, CallbackQueryContext, Context } from './interfaces';
-import { ResponseTimeInterceptor } from './interceptors/response-time.interceptor';
+import { TelegramLoggerInterceptor } from './interceptors';
 import { AdminGuard } from './guards';
 import { TelegramService } from '@/modules/telegram/telegram.service';
 import { BOT_NAME } from './telegram.constants';
@@ -11,7 +11,7 @@ import { I18nTranslations } from '@/generated/localization.generated';
 import { TelegrafExceptionFilter } from '@/modules/telegram/filters';
 
 @Update()
-@UseInterceptors(ResponseTimeInterceptor)
+@UseInterceptors(TelegramLoggerInterceptor)
 @UseFilters(TelegrafExceptionFilter)
 export class TelegramUpdate {
     private logger = new Logger('Telegram');
