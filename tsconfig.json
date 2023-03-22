@@ -21,7 +21,9 @@
       "@root/*": ["./*"],
       "@/*": ["src/*"],
       "@entities": ["src/shared/entities"],
+      "@models": ["src/shared/models"],
       "@types": ["src/shared/types"],
+      "@utils": ["src/shared/utils"],
       "@constants": ["src/shared/constants"]
     }
   }
