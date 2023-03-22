@@ -16,6 +16,7 @@ export type I18nTranslations = {
         "start": string;
         "top": string;
         "top_personal": string;
+        "my_data": string;
         "debug": string;
     };
     "errors": {
