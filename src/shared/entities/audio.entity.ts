@@ -18,7 +18,7 @@ export class AudioEntity extends BaseEntity {
     content: Buffer;
 
     @prop({ uniq: true })
-    hash: Buffer;
+    hash: string;
 
     @prop({ type: () => TelegramAudioEntity, _id: false, required: true })
     telegramMetadata: TelegramAudioEntity;

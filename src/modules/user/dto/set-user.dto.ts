@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class SetUserDto {
     @IsNumber()
@@ -24,4 +24,7 @@ export class SetUserDto {
 
     // @prop({ type: () => UserAccessEntity, _id: false, default: {} })
     // access?: UserAccessEntity;
+
+    @IsBoolean()
+    isBot?: boolean;
 }
