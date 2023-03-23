@@ -1,6 +1,11 @@
 {
   "save": "Save",
-  "discard": "Discard",
   "saved": "Saved",
+
+  "delete": "Delete",
+  "deleted": "Deleted",
+
+  "rename": "Rename",
+  "discard": "Discard",
   "discarded": "Discarded"
 }

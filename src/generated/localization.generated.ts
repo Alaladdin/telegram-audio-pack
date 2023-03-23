@@ -4,8 +4,11 @@ import { Path } from "nestjs-i18n";
 export type I18nTranslations = {
     "actions": {
         "save": string;
-        "discard": string;
         "saved": string;
+        "delete": string;
+        "deleted": string;
+        "rename": string;
+        "discard": string;
         "discarded": string;
     };
     "base": {
