@@ -4,15 +4,25 @@ import { I18nTranslations } from '@/generated/localization.generated';
 import { map } from '@utils';
 import { Audio, Voice } from 'typegram';
 import { Markup, Telegraf } from 'telegraf';
-import { AudioContext, CallbackQueryContext, Context } from './interfaces';
+import {
+    AudioContext,
+    CallbackQueryContext,
+    ChosenInlineResultContext,
+    Context,
+    MessageContext,
+    UserData,
+} from './interfaces';
 import { ADMINS_IDS, BOT_COMMANDS_LIST } from './telegram.constants';
 import { InjectModel } from 'nestjs-typegoose';
 import { ModelType } from '@typegoose/typegoose/lib/types';
 import { HttpService } from '@nestjs/axios';
-import { AudioEntity, UserEntity } from '@entities';
+import { AudioEntity } from '@entities';
 import { Readable } from 'stream';
 import { FfmpegService } from '@/modules/ffmpeg/ffmpeg.service';
 import { ConfigService } from '@nestjs/config';
+import { formatDate } from '@utils';
+import { UserService } from '@/modules/user/user.service';
+import { EMPTY_VALUE } from '@constants';
 
 @Injectable()
 export class TelegramService {
@@ -20,7 +30,7 @@ export class TelegramService {
 
     constructor(
         @InjectModel(AudioEntity) private readonly audioRepository: ModelType<AudioEntity>,
-        @InjectModel(UserEntity) private readonly userRepository: ModelType<UserEntity>,
+        private readonly userService: UserService,
         private readonly configService: ConfigService,
         private readonly ffmpegService: FfmpegService,
         private readonly httpService: HttpService,
@@ -42,15 +52,46 @@ export class TelegramService {
         }
     }
 
-    async onStartCommand(ctx: Context) {
+    async onStartCommand(ctx: MessageContext) {
         const message = ctx.$t('replies.greeting', { args: { name: ctx.displayName } });
+        const user = ctx.from;
+
+        await this.userService.createOrUpdateUser({
+            userId: user.id,
+            username: user.username,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            displayName: ctx.displayName,
+            lang: user.language_code,
+        });
 
         await ctx.$replyWithMarkdown(message);
     }
 
-    async onDebugCommand(ctx: Context) {
+    async onGetMyData(ctx: MessageContext) {
+        const user = await this.userService.getUser(ctx.from.id);
+
+        if (user) {
+            const messageList: UserData[] = [
+                { title: 'userId', value: user.userId },
+                { title: 'firstName', value: user.firstName },
+                { title: 'lastName', value: user.lastName },
+                { title: 'displayName', value: user.displayName },
+                { title: 'access', value: JSON.stringify(user.access, null, 4) },
+                { title: 'updatedAt', value: formatDate(user.updatedAt) },
+                { title: 'createdAt', value: formatDate(user.createdAt) },
+            ];
+            const message = map(messageList, (message) => `${message.title}: ${message.value || EMPTY_VALUE}`);
+
+            await ctx.$replyWithMarkdown(message.join('\n'));
+        } else {
+            await ctx.$replyWithMarkdown('No data about you');
+        }
+    }
+
+    async onDebugCommand(ctx: MessageContext) {
         const { botInfo, from, chat } = ctx;
-        const fullName = [from?.first_name, from?.last_name].join(' ') || 'UNKNOWN';
+        const fullName = [from.first_name, from.last_name].join(' ');
         const appVersion = this.configService.get('npm_package_version');
         const message = [
             `\\# *bot*`,
@@ -61,15 +102,15 @@ export class TelegramService {
             `\`isProduction: ${this.isProd}\``,
 
             `\n\\# *chat*`,
-            `\`id: ${chat?.id}\``,
-            `\`type: ${chat?.type}\``,
+            `\`id: ${chat.id}\``,
+            `\`type: ${chat.type}\``,
 
             `\n\\# *user*`,
-            `\`id: ${from?.id}\``,
-            `\`username: @${from?.username}\``,
+            `\`id: ${from.id}\``,
+            `\`username: @${from.username || 'NO_TAG'}\``,
             `\`fullName: ${fullName}\``,
             `\`locale: ${from?.language_code || 'UNKNOWN'}\``,
-            `\`isAdmin: ${ADMINS_IDS.includes(<number>from?.id)}\``,
+            `\`isAdmin: ${ADMINS_IDS.includes(from.id)}\``,
         ];
 
         await ctx.replyWithMarkdownV2(message.join('\n'));
@@ -78,7 +119,7 @@ export class TelegramService {
     async onAudioMessage(ctx: AudioContext) {
         if (ctx.botInfo.id === ctx.message.via_bot?.id) return;
 
-        const message = ctx.$t('base.save') + '?';
+        const message = ctx.$t('actions.save') + '?';
         const keyboard = Markup.inlineKeyboard([
             [
                 Markup.button.callback(ctx.$t('base.yes'), 'SAVE_AUDIO'),
@@ -143,7 +184,7 @@ export class TelegramService {
             },
         });
 
-        return ctx.editMessageText(`\`${ctx.$t('base.saved')}\``, { parse_mode: 'MarkdownV2' });
+        return ctx.editMessageText(`\`${ctx.$t('actions.saved')}\``, { parse_mode: 'MarkdownV2' });
     }
 
     private getAudioData(audio: Audio) {
@@ -158,16 +199,18 @@ export class TelegramService {
     }
 
     private async onDiscardAudio(ctx: CallbackQueryContext) {
-        const message = ctx.$t('base.discarded');
+        const message = ctx.$t('actions.discarded');
 
         return ctx.editMessageText(`\`${message}\``, { parse_mode: 'MarkdownV2' });
     }
 
     async onInlineQuery(ctx: Context) {
-        const queryData = ctx.inlineQuery;
+        const searchText = ctx.inlineQuery?.query;
         const audios = await this.audioRepository
             .find({
-                name: { $regex: queryData?.query, $options: 'i' },
+                name: { $regex: searchText, $options: 'i' },
+                // authoredBy: { $regex: searchText, $options: 'i' },
+                // createdBy: { $regex: searchText, $options: 'i' },
                 deletedAt: null,
             })
             .sort('-usedTimes')
@@ -184,6 +227,24 @@ export class TelegramService {
             {
                 cache_time: this.isProd ? 300 : 0,
             },
+        );
+    }
+
+    async updateStats(ctx: ChosenInlineResultContext) {
+        const { from: user, result_id: fileUniqueId } = ctx.chosenInlineResult;
+
+        await this.userService.createOrUpdateUser({
+            userId: user.id,
+            username: user.username,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            displayName: user.first_name,
+            lang: user.language_code,
+        });
+
+        await this.audioRepository.findOneAndUpdate(
+            { 'telegramMetadata.fileUniqueId': fileUniqueId },
+            { $inc: { usedTimes: 1 } },
         );
     }
 }

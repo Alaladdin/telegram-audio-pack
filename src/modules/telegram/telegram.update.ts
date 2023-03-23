@@ -1,7 +1,7 @@
 import { Logger, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { InjectBot, Update, Command, On } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
-import { AudioContext, CallbackQueryContext, Context } from './interfaces';
+import { AudioContext, CallbackQueryContext, ChosenInlineResultContext, Context, MessageContext } from './interfaces';
 import { TelegramLoggerInterceptor } from './interceptors';
 import { AdminGuard } from './guards';
 import { TelegramService } from '@/modules/telegram/telegram.service';
@@ -32,12 +32,17 @@ export class TelegramUpdate {
     }
 
     @Command('start')
-    async onStart(ctx: Context) {
+    async onStart(ctx: MessageContext) {
         return this.telegramService.onStartCommand(ctx);
     }
 
+    @Command('my_data')
+    async onGetMyData(ctx: MessageContext) {
+        return this.telegramService.onGetMyData(ctx);
+    }
+
     @Command('debug')
-    async onDebug(ctx: Context) {
+    async onDebug(ctx: MessageContext) {
         return this.telegramService.onDebugCommand(ctx);
     }
 
@@ -62,5 +67,10 @@ export class TelegramUpdate {
     @On('inline_query')
     async onInlineQuery(ctx: Context) {
         return this.telegramService.onInlineQuery(ctx);
+    }
+
+    @On('chosen_inline_result')
+    async onInlineQueryResultChosen(ctx: ChosenInlineResultContext) {
+        return this.telegramService.updateStats(ctx);
     }
 }

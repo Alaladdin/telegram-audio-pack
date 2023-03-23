@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
 
 export abstract class BaseModel {
-    _id: Types.ObjectId;
-    id: string;
-    createdAt: Date | string;
-    updatedAt: Date | string;
+    readonly _id: Types.ObjectId;
+    readonly id: string;
+    readonly createdAt: Date;
+    readonly updatedAt: Date;
 }

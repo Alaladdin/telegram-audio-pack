@@ -2,8 +2,7 @@ import { Context as tgContext } from 'telegraf';
 import { I18nTranslations } from '@/generated/localization.generated';
 import { PathImpl2 } from '@nestjs/config';
 import { TranslateOptions } from 'nestjs-i18n/dist/services/i18n.service';
-import { CallbackQuery, Update, Message, Audio, Voice } from 'typegram';
-import { Readable } from 'stream';
+import { CallbackQuery, Update, Message } from 'typegram';
 import { ExtraReplyMessage } from 'telegraf/src/telegram-types';
 
 interface BaseContext {
@@ -12,9 +11,6 @@ interface BaseContext {
     $t: (key: PathImpl2<I18nTranslations>, options?: TranslateOptions) => string;
     $replyWithMarkdown: (text: string, extra?: ExtraReplyMessage) => ReturnType<tgContext['replyWithMarkdownV2']>;
 }
-
-export interface AudioContext extends tgContext<Update.MessageUpdate<Message.AudioMessage>>, BaseContext {}
-export interface Context extends tgContext, BaseContext {}
 
 interface CallbackQueryWithData<T extends Message.CommonMessage> extends Omit<CallbackQuery.DataQuery, 'message'> {
     message: Omit<Message.CommonMessage, 'reply_to_message'> & { reply_to_message: T };
@@ -29,8 +25,8 @@ export interface CallbackQueryContext
     extends tgContext<Update.CallbackQueryUpdate<CallbackQueryWithData<CallbackQueryUpdateType>>>,
         BaseContext {}
 
-export interface SaveAudioFile<T extends Audio | Voice> {
-    fileStream: Readable;
-    title: string;
-    audio: T;
-}
+export interface ChosenInlineResultContext extends tgContext<Update.ChosenInlineResultUpdate>, BaseContext {}
+
+export interface Context extends tgContext, BaseContext {}
+export interface AudioContext extends tgContext<Update.MessageUpdate<Message.AudioMessage>>, BaseContext {}
+export interface MessageContext extends tgContext<Update.MessageUpdate>, BaseContext {}

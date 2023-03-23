@@ -8,5 +8,5 @@ export class UserModel extends BaseModel {
     firstName: string;
     lastName?: string;
     lang?: string;
-    access?: UserAccessEntity;
+    access: UserAccessEntity;
 }
