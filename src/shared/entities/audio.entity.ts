@@ -11,11 +11,14 @@ import { BaseEntity } from './base.entity';
     },
 })
 export class AudioEntity extends BaseEntity {
-    @prop({ uniq: true, required: true })
+    @prop({ uniq: true })
     name: string;
 
-    @prop({ uniq: true, required: true })
+    @prop({ required: true })
     content: Buffer;
+
+    @prop({ uniq: true })
+    hash: Buffer;
 
     @prop({ type: () => TelegramAudioEntity, _id: false, required: true })
     telegramMetadata: TelegramAudioEntity;

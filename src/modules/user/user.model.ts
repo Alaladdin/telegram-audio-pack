@@ -9,4 +9,5 @@ export class UserModel extends BaseModel {
     lastName?: string;
     lang?: string;
     access: UserAccessEntity;
+    isBot: boolean;
 }

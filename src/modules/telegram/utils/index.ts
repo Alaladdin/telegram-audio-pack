@@ -10,6 +10,7 @@ export const getMappedUser = (user: TelegramUser): SetUserDto => {
         firstName: user.first_name,
         lastName: user.last_name,
         lang: user.language_code,
+        isBot: user.is_bot,
     };
 };
 

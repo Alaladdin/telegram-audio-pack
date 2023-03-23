@@ -30,4 +30,7 @@ export class UserEntity extends BaseEntity {
 
     @prop({ type: () => UserAccessEntity, _id: false, default: {} })
     access?: UserAccessEntity;
+
+    @prop({ required: true })
+    isBot: boolean;
 }
