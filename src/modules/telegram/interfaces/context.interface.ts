@@ -7,7 +7,6 @@ import { ExtraReplyMessage } from 'telegraf/src/telegram-types';
 
 export type ExtraSendMessage = Parameters<tgContext['sendMessage']>['1'];
 interface BaseContext {
-    displayName: string;
     isAdmin: boolean;
     $t: (key: PathImpl2<I18nTranslations>, options?: TranslateOptions) => string;
     $sendMessageWithMarkdown: (message: string, extra?: ExtraSendMessage) => ReturnType<tgContext['sendMessage']>;

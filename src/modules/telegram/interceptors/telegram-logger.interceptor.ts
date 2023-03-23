@@ -4,6 +4,7 @@ import { tap } from 'rxjs/operators';
 import { chain } from '@utils';
 import { TelegrafExecutionContext } from 'nestjs-telegraf';
 import { Context } from '@/modules/telegram/interfaces';
+import { getDisplayName } from '@/modules/telegram/utils';
 
 type LogOption = { title: string; value?: string | number | boolean } | { valueGetter: () => string };
 
@@ -21,7 +22,7 @@ export class TelegramLoggerInterceptor implements NestInterceptor {
                 const end = Date.now() - start;
                 const logOptions: LogOption[] = [
                     { valueGetter: () => (ctx.chat && 'title' in ctx.chat ? ctx.chat.title : '') },
-                    { valueGetter: () => ctx.displayName },
+                    { valueGetter: () => getDisplayName(ctx.from) },
                     { title: 'chatId', value: ctx.chat?.id },
                     { valueGetter: () => `@${ctx.from?.username}` },
                     { title: 'inlineQuery', value: ctx.inlineQuery?.query },

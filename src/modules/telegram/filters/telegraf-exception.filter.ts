@@ -12,6 +12,6 @@ export class TelegrafExceptionFilter implements ExceptionFilter {
         const errorMessage = ctx.$t('errors.base_error', { args: { message: exception.message } });
 
         this.logger.error(errorMessage);
-        await ctx.reply(errorMessage);
+        await ctx.reply(errorMessage).catch(this.logger.error);
     }
 }
