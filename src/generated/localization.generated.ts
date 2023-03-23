@@ -5,6 +5,7 @@ export type I18nTranslations = {
     "actions": {
         "save": string;
         "saved": string;
+        "restore": string;
         "delete": string;
         "deleted": string;
         "rename": string;
