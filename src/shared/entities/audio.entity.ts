@@ -20,17 +20,17 @@ export class AudioEntity extends BaseEntity {
     @prop({ type: () => TelegramAudioEntity, _id: false, required: true })
     telegramMetadata: TelegramAudioEntity;
 
-    @prop({ type: () => UserEntity, _id: false, required: true })
+    @prop({ ref: () => UserEntity, required: true })
     authoredBy: UserEntity;
 
-    @prop({ type: () => UserEntity, _id: false, required: true })
+    @prop({ ref: () => UserEntity, required: true })
     createdBy: UserEntity;
 
-    @prop({ default: null })
-    deletedAt: UserEntity;
+    @prop({ ref: () => UserEntity, default: null })
+    deletedBy?: UserEntity;
 
-    @prop({ type: () => UserEntity, _id: false, default: null })
-    deletedBy: Date;
+    @prop({ default: null })
+    deletedAt?: Date;
 
     @prop({ default: 0 })
     usedTimes: number;

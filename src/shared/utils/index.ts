@@ -4,6 +4,7 @@ import * as moment from 'moment';
 export const chain = _.chain;
 export const clone = _.cloneDeep;
 export const map = _.map;
+export const each = _.each;
 export const filter = _.filter;
 export const reject = _.reject;
 export const keys = _.keys;

@@ -1,14 +1,17 @@
 import { Context } from '@/modules/telegram/interfaces/context.interface';
 import { ADMINS_IDS, UNKNOWN_USER_NAME } from '@/modules/telegram/telegram.constants';
 import { User } from 'typegram';
-import { ExtraReplyMessage } from 'telegraf/src/telegram-types';
 
 export const baseMiddleware = (ctx: Context, next: () => Promise<void>) => {
     const user = ctx.from;
 
     ctx.displayName = getDisplayName(user);
     ctx.isAdmin = !!user && ADMINS_IDS.includes(user.id);
-    ctx.$replyWithMarkdown = (message: string, extra?: ExtraReplyMessage) => {
+    ctx.$sendMessageWithMarkdown = (message, extra) => {
+        return ctx.sendMessage(`\`${message}\``, { ...extra, parse_mode: 'MarkdownV2' });
+    };
+
+    ctx.$replyWithMarkdown = (message, extra) => {
         return ctx.replyWithMarkdownV2(`\`${message}\``, extra);
     };
 

@@ -36,6 +36,16 @@ export class TelegramUpdate {
         return this.telegramService.onStartCommand(ctx);
     }
 
+    @Command('top')
+    async onGetTop(ctx: MessageContext) {
+        return this.telegramService.onGetTop(ctx);
+    }
+
+    @Command('top_personal')
+    async onTopPersonal(ctx: MessageContext) {
+        return this.telegramService.onStartCommand(ctx);
+    }
+
     @Command('my_data')
     async onGetMyData(ctx: MessageContext) {
         return this.telegramService.onGetMyData(ctx);

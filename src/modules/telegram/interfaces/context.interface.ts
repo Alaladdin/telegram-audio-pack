@@ -5,16 +5,18 @@ import { TranslateOptions } from 'nestjs-i18n/dist/services/i18n.service';
 import { CallbackQuery, Update, Message } from 'typegram';
 import { ExtraReplyMessage } from 'telegraf/src/telegram-types';
 
+export type ExtraSendMessage = Parameters<tgContext['sendMessage']>['1'];
 interface BaseContext {
     displayName: string;
     isAdmin: boolean;
     $t: (key: PathImpl2<I18nTranslations>, options?: TranslateOptions) => string;
-    $replyWithMarkdown: (text: string, extra?: ExtraReplyMessage) => ReturnType<tgContext['replyWithMarkdownV2']>;
+    $sendMessageWithMarkdown: (message: string, extra?: ExtraSendMessage) => ReturnType<tgContext['sendMessage']>;
+    $replyWithMarkdown: (message: string, extra?: ExtraReplyMessage) => ReturnType<tgContext['replyWithMarkdownV2']>;
 }
 
 interface CallbackQueryWithData<T extends Message.CommonMessage> extends Omit<CallbackQuery.DataQuery, 'message'> {
     message: Omit<Message.CommonMessage, 'reply_to_message'> & { reply_to_message: T };
-    data: 'SAVE_AUDIO' | 'DISCARD_AUDIO' | 'EDIT_AUDIO' | 'DELETE_AUDIO';
+    data: 'SAVE_AUDIO' | 'DISCARD_AUDIO' | 'RENAME_AUDIO' | 'DELETE_AUDIO';
 }
 
 export type CallbackQueryUpdateType =
