@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getDatabaseConfig, getEnvFilePath, getLocalizationConfig } from '@/config';
 import { TypegooseModule } from 'nestjs-typegoose';
 import { I18nModule } from 'nestjs-i18n';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
@@ -21,6 +22,7 @@ import { I18nModule } from 'nestjs-i18n';
             inject: [ConfigService],
             useFactory: getLocalizationConfig,
         }),
+        ScheduleModule.forRoot(),
         TelegramModule,
     ],
 })
