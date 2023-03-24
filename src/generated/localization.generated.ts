@@ -6,6 +6,7 @@ export type I18nTranslations = {
         "save": string;
         "saved": string;
         "restore": string;
+        "restored": string;
         "delete": string;
         "deleted": string;
         "rename": string;
