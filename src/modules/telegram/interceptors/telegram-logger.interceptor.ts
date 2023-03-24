@@ -10,7 +10,7 @@ type LogOption = { title: string; value?: string | number | boolean } | { valueG
 
 @Injectable()
 export class TelegramLoggerInterceptor implements NestInterceptor {
-    private readonly logger = new Logger('Telegram');
+    private readonly logger = new Logger(TelegramLoggerInterceptor.name);
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         const start = Date.now();
