@@ -78,10 +78,12 @@ export class TelegramService {
                 { title: 'lastName', value: user.lastName },
                 { title: 'displayName', value: user.displayName },
                 { title: 'access', value: JSON.stringify(user.access, null, 4) },
+                { title: 'lang', value: user.lang },
                 { title: 'updatedAt', value: formatDate(user.updatedAt) },
                 { title: 'createdAt', value: formatDate(user.createdAt) },
+                { title: 'isBot', value: user.isBot },
             ];
-            const message = map(messageList, (message) => `${message.title}: ${message.value || EMPTY_VALUE}`);
+            const message = map(messageList, (message) => `${message.title}: ${message.value ?? EMPTY_VALUE}`);
 
             await ctx.$replyWithMarkdown(message.join('\n'));
         } else {
@@ -173,6 +175,7 @@ export class TelegramService {
                 duration: newVoice.duration,
             },
             content: fileBuffer,
+            hash: getBufferHash(fileBuffer),
             name: replyMessage.caption || audioData.title,
             authoredBy: {
                 id: author.id,
