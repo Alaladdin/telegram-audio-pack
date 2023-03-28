@@ -5,7 +5,6 @@ import { BaseModel } from '@models';
 export class AudioModel extends BaseModel {
     name: string;
     content: Buffer;
-    hash: string;
     telegramMetadata: TelegramAudioEntity;
     authoredBy: UserEntity;
     createdBy: UserEntity;

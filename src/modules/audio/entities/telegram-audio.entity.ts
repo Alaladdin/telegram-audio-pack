@@ -10,9 +10,9 @@ export class TelegramAudioEntity {
     @prop({ required: true })
     duration: number;
 
-    @prop({ required: true })
-    size: number;
+    @prop({ default: null })
+    size?: number;
 
     @prop({ default: null })
-    mimeType: string;
+    mimeType?: string;
 }

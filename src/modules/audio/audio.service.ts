@@ -5,13 +5,14 @@ import { ModelType } from '@typegoose/typegoose/lib/types';
 import { getSubtractedDate } from '@utils';
 import { AudioModel } from '@/modules/audio/audio.model';
 import { DeleteAudioFilter, GetAudiosListFilter, UpdateAudioFilter, UserRef } from '@/modules/audio/audio.interfaces';
+import { SetAudioDto } from '@/modules/audio/dto';
 @Injectable()
 export class AudioService {
     private readonly logger = new Logger(AudioService.name);
 
     constructor(@InjectModel(AudioEntity) private readonly audioRepository: ModelType<AudioEntity>) {}
 
-    async createAudio(audio: AudioEntity): Promise<AudioModel> {
+    async createAudio(audio: SetAudioDto): Promise<AudioModel> {
         const newAudio = await this.audioRepository.create(audio);
 
         return newAudio.toObject();

@@ -17,9 +17,6 @@ export class AudioEntity extends BaseEntity {
     @prop({ required: true })
     content: Buffer;
 
-    @prop({ uniq: true })
-    hash: string;
-
     @prop({ type: () => TelegramAudioEntity, _id: false, required: true })
     telegramMetadata: TelegramAudioEntity;
 
@@ -36,5 +33,5 @@ export class AudioEntity extends BaseEntity {
     deletedAt?: Date;
 
     @prop({ default: 0 })
-    usedTimes: number;
+    usedTimes?: number;
 }
