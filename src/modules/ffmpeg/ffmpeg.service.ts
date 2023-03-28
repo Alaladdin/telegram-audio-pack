@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as ffmpeg from 'fluent-ffmpeg';
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import { getCleanAudioOptions } from './interfaces';
-import * as stream from 'stream';
-import { flatten } from '@utils';
+import { flatten, getTempFile } from '@utils';
+import * as fs from 'fs/promises';
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -12,29 +12,21 @@ export class FfmpegService {
     private logger = new Logger(FfmpegService.name);
 
     async getCleanAudio(options: getCleanAudioOptions): Promise<Buffer> {
-        return new Promise(async (resolve) => {
-            const fileStream = await this.getAudioBufferStream(options);
-            const buffer: Buffer[] = [];
+        const filePath = await this.getCleanAudioPath(options);
 
-            fileStream.on('data', function (chunk: Buffer) {
-                buffer.push(chunk);
-            });
-
-            fileStream.on('end', function () {
-                resolve(Buffer.concat(buffer));
-            });
-        });
+        return fs.readFile(filePath);
     }
 
-    private async getAudioBufferStream({ readable, title }: getCleanAudioOptions): Promise<stream.PassThrough> {
-        const bufferStream = new stream.PassThrough();
+    private async getCleanAudioPath({ url, title }: getCleanAudioOptions): Promise<string> {
+        const tempFilePath = await getTempFile();
         const outputOptions = flatten([
+            ['-safe', '0'],
             ['-map_metadata', '-1'],
             ['-metadata', `title="${title}"`],
         ]);
 
         return new Promise((resolve, reject) => {
-            ffmpeg(readable)
+            ffmpeg(url)
                 .audioCodec('opus')
                 .outputFormat('ogg')
                 .outputOptions(outputOptions)
@@ -44,15 +36,18 @@ export class FfmpegService {
                 .on('progress', (progress) => {
                     this.logger.debug('Progress: ', progress);
                 })
-                .on('end', () => {
-                    this.logger.log('Command executed successful');
-                    resolve(bufferStream);
+                .on('stderr', (stderrLine) => {
+                    this.logger.debug('Stderr output: ' + stderrLine);
                 })
                 .on('error', (e) => {
                     this.logger.error(`Command execution error: ${e}`);
                     reject(e);
                 })
-                .writeToStream(bufferStream, { end: true });
+                .on('end', () => {
+                    this.logger.log('Command executed successfully');
+                    resolve(tempFilePath);
+                })
+                .save(tempFilePath);
         });
     }
 }
