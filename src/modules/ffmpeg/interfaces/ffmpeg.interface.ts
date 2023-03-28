@@ -1,6 +1,4 @@
-import stream from 'stream';
-
 export interface getCleanAudioOptions {
-    readable: stream.Readable;
+    url: string;
     title: string;
 }
