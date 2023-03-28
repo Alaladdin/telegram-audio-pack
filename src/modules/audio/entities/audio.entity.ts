@@ -2,7 +2,7 @@ import { modelOptions, prop, Ref } from '@typegoose/typegoose';
 import { getDefaultDatabaseSchemaOptions } from '@/config';
 import { UserEntity } from '@/modules/user/entities/user.entity';
 import { TelegramAudioEntity } from './telegram-audio.entity';
-import { BaseEntity } from './base.entity';
+import { BaseEntity } from '@entities';
 
 @modelOptions({
     schemaOptions: {

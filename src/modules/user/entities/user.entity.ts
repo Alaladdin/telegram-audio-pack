@@ -25,7 +25,7 @@ export class UserEntity extends BaseEntity {
     @prop({ default: null })
     lastName?: string;
 
-    @prop({ default: 'ru' })
+    @prop({ default: null })
     lang?: string;
 
     @prop({ type: () => UserAccessEntity, _id: false, default: {} })
