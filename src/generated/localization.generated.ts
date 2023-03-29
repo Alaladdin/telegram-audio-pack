@@ -30,6 +30,7 @@ export type I18nTranslations = {
     };
     "replies": {
         "greeting": string;
+        "audios_list": string;
         "top_audios_list": string;
         "used_times": string;
     };
