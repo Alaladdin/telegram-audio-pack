@@ -1,14 +1,13 @@
 import { Context as tgContext } from 'telegraf';
-import { I18nTranslations } from '@/generated/localization.generated';
-import { PathImpl2 } from '@nestjs/config';
 import { TranslateOptions } from 'nestjs-i18n/dist/services/i18n.service';
 import { CallbackQuery, Update, Message } from 'typegram';
 import { ExtraReplyMessage } from 'telegraf/src/telegram-types';
+import { I18nKey } from '@/shared/types/18n.types';
 
 export type ExtraSendMessage = Parameters<tgContext['sendMessage']>['1'];
 interface BaseContext {
     isAdmin: boolean;
-    $t: (key: PathImpl2<I18nTranslations>, options?: TranslateOptions) => string;
+    $t: (key: I18nKey, options?: TranslateOptions) => string;
     $sendMessageWithMarkdown: (message: string, extra?: ExtraSendMessage) => ReturnType<tgContext['sendMessage']>;
     $replyWithMarkdown: (message: string, extra?: ExtraReplyMessage) => ReturnType<tgContext['replyWithMarkdownV2']>;
 }

@@ -29,12 +29,12 @@ export class TelegramService {
     private isProd = true;
 
     constructor(
-        @InjectModel(AudioEntity) private readonly audioRepository: ModelType<AudioEntity>,
-        private readonly userService: UserService,
         private readonly configService: ConfigService,
-        private readonly ffmpegService: FfmpegService,
-        private readonly httpService: HttpService,
         private readonly i18n: I18nService<I18nTranslations>,
+        private readonly httpService: HttpService,
+        private readonly audioService: AudioService,
+        private readonly userService: UserService,
+        private readonly ffmpegService: FfmpegService,
     ) {
         this.isProd = this.configService.get('NODE_ENV') === 'production';
     }
@@ -94,6 +94,7 @@ export class TelegramService {
     async onDebugCommand(ctx: MessageContext) {
         const { botInfo, from, chat } = ctx;
         const fullName = [from.first_name, from.last_name].join(' ');
+        const userTag = from.username ? `@${from.username}` : EMPTY_VALUE;
         const appVersion = this.configService.get('npm_package_version');
         const message = [
             `\\# *bot*`,
@@ -109,9 +110,9 @@ export class TelegramService {
 
             `\n\\# *user*`,
             `\`id: ${from.id}\``,
-            `\`username: @${from.username || 'NO_TAG'}\``,
+            `\`username: ${userTag}\``,
             `\`fullName: ${fullName}\``,
-            `\`locale: ${from?.language_code || 'UNKNOWN'}\``,
+            `\`lang: ${from?.language_code || EMPTY_VALUE}\``,
             `\`isAdmin: ${ADMINS_IDS.includes(from.id)}\``,
         ];
 
@@ -119,17 +120,20 @@ export class TelegramService {
     }
 
     async onAudioMessage(ctx: AudioContext) {
-        if (ctx.botInfo.id === ctx.message.via_bot?.id) return;
+        const isPrivateChat = ctx.chat.type === 'private';
+        const isFromCurrentBot = ctx.botInfo.id === ctx.message.via_bot?.id;
 
-        const message = ctx.$t('actions.save') + '?';
-        const keyboard = Markup.inlineKeyboard([
-            [
-                Markup.button.callback(ctx.$t('base.yes'), 'SAVE_AUDIO'),
-                Markup.button.callback(ctx.$t('base.no'), 'DISCARD_AUDIO'),
-            ],
-        ]);
+        if (isPrivateChat && !isFromCurrentBot) {
+            const message = ctx.$t('actions.save') + '?';
+            const inlineKeyboard = Markup.inlineKeyboard([
+                [
+                    Markup.button.callback(ctx.$t('base.yes'), 'SAVE_AUDIO'),
+                    Markup.button.callback(ctx.$t('base.no'), 'DISCARD_AUDIO'),
+                ],
+            ]);
 
-        await ctx.$replyWithMarkdown(message, keyboard);
+            await ctx.$replyWithMarkdown(message, inlineKeyboard);
+        }
     }
 
     async onCallbackQuery(ctx: CallbackQueryContext) {

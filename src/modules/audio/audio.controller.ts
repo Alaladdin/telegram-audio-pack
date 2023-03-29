@@ -12,7 +12,7 @@ export class AudioController {
     async deleteOldAudios() {
         const start = Date.now();
 
-        this.logger.debug('Cleaning old audios');
+        this.logger.debug('Cleaning deleted audios');
 
         await this.audioService
             .cleanUpAudios()
