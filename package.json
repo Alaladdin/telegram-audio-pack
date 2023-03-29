@@ -40,6 +40,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "mongoose": "^7.0.1",
+    "mongoose-lean-virtuals": "^0.9.1",
     "nestjs-i18n": "10.2.6",
     "nestjs-telegraf": "^2.6.3",
     "nestjs-typegoose": "^7.1.38",
