@@ -1,3 +1,5 @@
 {
-  "greeting": "Hello, {name}"
+  "greeting": "Hello, {name}",
+  "top_audios_list": "Top audios list",
+  "used_times": "Used times: {count}"
 }

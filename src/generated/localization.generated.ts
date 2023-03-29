@@ -30,6 +30,8 @@ export type I18nTranslations = {
     };
     "replies": {
         "greeting": string;
+        "top_audios_list": string;
+        "used_times": string;
     };
 };
 export type I18nPath = Path<I18nTranslations>;
