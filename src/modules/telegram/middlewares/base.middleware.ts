@@ -5,6 +5,7 @@ export const baseMiddleware = (ctx: Context, next: () => Promise<void>) => {
     const user = ctx.from;
 
     ctx.isAdmin = !!user && ADMINS_IDS.includes(user.id);
+
     ctx.$sendMessageWithMarkdown = (message, extra) => {
         return ctx.sendMessage(`\`${message}\``, { ...extra, parse_mode: 'MarkdownV2' });
     };
