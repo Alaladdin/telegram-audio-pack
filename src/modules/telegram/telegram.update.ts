@@ -75,7 +75,6 @@ export class TelegramUpdate {
         return this.telegramService.onAudioMessage(ctx);
     }
 
-    @UseGuards(AdminGuard)
     @On('callback_query')
     async onCallbackQuery(ctx: CallbackQueryContext) {
         return this.telegramService

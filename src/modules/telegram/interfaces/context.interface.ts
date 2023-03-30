@@ -1,6 +1,6 @@
 import { Context as tgContext } from 'telegraf';
 import { TranslateOptions } from 'nestjs-i18n/dist/services/i18n.service';
-import { CallbackQuery, Update, Message } from 'typegram';
+import { CallbackQuery, Update, Message, User } from 'typegram';
 import { ExtraReplyMessage } from 'telegraf/src/telegram-types';
 import { I18nKey } from '@/shared/types/18n.types';
 
@@ -13,8 +13,8 @@ interface BaseContext {
 }
 
 interface CallbackQueryWithData<T extends Message.CommonMessage> extends Omit<CallbackQuery.DataQuery, 'message'> {
-    message: Omit<Message.CommonMessage, 'reply_to_message'> & { reply_to_message: T };
-    data: 'SAVE_AUDIO' | 'DISCARD_AUDIO' | 'RESTORE_AUDIO' | 'RENAME_AUDIO' | 'DELETE_AUDIO';
+    message: Omit<Message.CommonMessage, 'reply_to_message'> & { from: User; reply_to_message: T };
+    data: 'SAVE_AUDIO' | 'DISCARD_AUDIO' | 'RESTORE_AUDIO' | 'RENAME_AUDIO' | 'DELETE_AUDIO' | 'DELETE_MY_DATA';
 }
 
 export type CallbackQueryUpdateType =

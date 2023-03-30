@@ -128,8 +128,15 @@ export class TelegramService {
     async onGetMyData(ctx: MessageContext) {
         const user = await this.userService.getUser(ctx.from.id);
         let message = ctx.$t('base.not_found');
+        let messageExtra = {};
 
         if (user) {
+            if (!ctx.isAdmin) {
+                messageExtra = Markup.inlineKeyboard([
+                    [Markup.button.callback(ctx.$t('actions.delete'), 'DELETE_MY_DATA')],
+                ]);
+            }
+
             const rawMessageList: UserData[] = [
                 { title: 'userId', value: user.userId },
                 { title: 'firstName', value: user.firstName },
@@ -145,7 +152,7 @@ export class TelegramService {
             message = map(rawMessageList, (message) => `${message.title}: ${message.value ?? EMPTY_VALUE}`).join('\n');
         }
 
-        await ctx.$replyWithMarkdown(message);
+        await ctx.$replyWithMarkdown(message, messageExtra);
     }
 
     async onDebugCommand(ctx: MessageContext) {
@@ -197,20 +204,38 @@ export class TelegramService {
         const queryKey = ctx.callbackQuery.data;
         const [key, payload] = queryKey.split(':');
 
-        if (key === 'SAVE_AUDIO') {
-            return this.onSaveAudio(ctx);
+        if (key === 'DELETE_MY_DATA') {
+            await this.onDeleteUser(ctx);
         }
 
-        if (key === 'DISCARD_AUDIO') {
-            return this.onDiscardAudio(ctx);
-        }
+        if (ctx.isAdmin) {
+            if (key === 'SAVE_AUDIO') {
+                await this.onSaveAudio(ctx);
+            }
 
-        if (key === 'DELETE_AUDIO') {
-            return this.onDeleteAudio(ctx, payload);
-        }
+            if (key === 'DISCARD_AUDIO') {
+                await this.onDiscardAudio(ctx);
+            }
 
-        if (key === 'RESTORE_AUDIO') {
-            return this.onRestoreAudio(ctx, payload);
+            if (key === 'DELETE_AUDIO') {
+                await this.onDeleteAudio(ctx, payload);
+            }
+
+            if (key === 'RESTORE_AUDIO') {
+                await this.onRestoreAudio(ctx, payload);
+            }
+        }
+    }
+
+    private async onDeleteUser(ctx: CallbackQueryContext) {
+        const messageAuthor = ctx.callbackQuery.message.reply_to_message.from;
+        const actionAuthor = ctx.from;
+
+        if (messageAuthor?.id === actionAuthor.id) {
+            const isDeleted = await this.userService.deleteUser(ctx.from.id);
+            const message = isDeleted ? ctx.$t('actions.deleted') : ctx.$t('base.not_found');
+
+            await ctx.editMessageText(`\`${message}\``, { parse_mode: 'MarkdownV2' });
         }
     }
 
@@ -270,7 +295,6 @@ export class TelegramService {
     }
 
     private async onDeleteAudio(ctx: CallbackQueryContext, audioId: string) {
-        // @ts-ignore
         const user = await this.userService.getUser(ctx.from.id);
         const deletedAudio = await this.audioService.deleteAudio({ _id: audioId }, user);
         let message = ctx.$t('base.not_found');
@@ -364,7 +388,10 @@ export class TelegramService {
         );
     }
 
-    onInlineQueryResultChosen(ctx: ChosenInlineResultContext) {
+    async onInlineQueryResultChosen(ctx: ChosenInlineResultContext) {
+        // todo personal stats
+        await this.userService.createOrUpdateUser(getMappedUser(ctx.from));
+
         console.log('result chosen');
     }
 }

@@ -19,4 +19,10 @@ export class UserService {
     async getUser(userId: UserEntity['userId']): Promise<UserModel> {
         return this.userRepository.findOne({ userId }).lean();
     }
+
+    async deleteUser(userId: UserEntity['userId']): Promise<boolean> {
+        const { deletedCount } = await this.userRepository.deleteOne({ userId });
+
+        return !!deletedCount;
+    }
 }
