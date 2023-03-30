@@ -68,7 +68,7 @@ export class TelegramService {
         });
 
         if (audiosList.length) {
-            await ctx.$sendMessageWithMarkdown(ctx.$t('replies.audios_list'));
+            await ctx.$sendMessageWithMarkdown(ctx.$t('replies.top_audios_list'));
 
             each(audiosList, (audio) => {
                 const message = ctx.$t('replies.used_times', { args: { count: audio.usedTimes } });
@@ -99,7 +99,7 @@ export class TelegramService {
         });
 
         if (audiosList.length) {
-            await ctx.$sendMessageWithMarkdown(ctx.$t('replies.top_audios_list'));
+            await ctx.$sendMessageWithMarkdown(ctx.$t('replies.audios_list'));
 
             each(audiosList, (audio) => {
                 const messageInfo = this.getMessageInfo(ctx, audio);
@@ -390,7 +390,9 @@ export class TelegramService {
 
     async onInlineQueryResultChosen(ctx: ChosenInlineResultContext) {
         // todo personal stats
-        await this.userService.createOrUpdateUser(getMappedUser(ctx.from));
+        const { from: user } = ctx.chosenInlineResult;
+
+        await this.userService.createOrUpdateUser(getMappedUser(user));
 
         console.log('result chosen');
     }
