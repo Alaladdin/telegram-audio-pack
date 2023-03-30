@@ -6,6 +6,7 @@ import { APP_NAME } from '@constants';
 
 export const chain = _.chain;
 export const clone = _.cloneDeep;
+export const find = _.find;
 export const map = _.map;
 export const each = _.each;
 export const filter = _.filter;

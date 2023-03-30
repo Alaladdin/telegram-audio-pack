@@ -4,6 +4,7 @@ import { UserEntity } from './entities';
 import { ReturnModelType } from '@typegoose/typegoose/lib/types';
 import { SetUserDto } from './dto';
 import { UserModel } from './user.model';
+import { UserId } from './user.interfaces';
 
 @Injectable()
 export class UserService {
@@ -16,11 +17,11 @@ export class UserService {
         return this.userRepository.findOneAndUpdate(filter, user, options).lean();
     }
 
-    async getUser(userId: UserEntity['userId']): Promise<UserModel> {
+    async getUser(userId: UserId): Promise<UserModel> {
         return this.userRepository.findOne({ userId }).lean();
     }
 
-    async deleteUser(userId: UserEntity['userId']): Promise<boolean> {
+    async deleteUser(userId: UserId): Promise<boolean> {
         const { deletedCount } = await this.userRepository.deleteOne({ userId });
 
         return !!deletedCount;

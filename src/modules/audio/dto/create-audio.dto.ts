@@ -1,10 +1,10 @@
 import { TelegramAudioEntity } from '@/modules/audio/entities';
-import { UserEntity } from '@/modules/user/entities';
+import { SetUserDto } from '@/modules/user/dto';
 
 export class CreateAudioDto {
     name: string;
     content: Buffer;
     telegramMetadata: TelegramAudioEntity;
-    authoredBy: UserEntity;
-    createdBy: UserEntity;
+    authoredBy: SetUserDto;
+    createdBy: SetUserDto;
 }

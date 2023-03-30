@@ -1,5 +1,4 @@
 import { BaseModel } from '@/shared/models';
-import { UserAccessEntity } from '@/modules/user/entities';
 
 export class UserModel extends BaseModel {
     userId: number;
@@ -8,6 +7,5 @@ export class UserModel extends BaseModel {
     firstName: string;
     lastName?: string;
     lang?: string;
-    access: UserAccessEntity;
     isBot: boolean;
 }

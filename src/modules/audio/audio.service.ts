@@ -4,9 +4,8 @@ import { AudioEntity } from './entities';
 import { ReturnModelType } from '@typegoose/typegoose/lib/types';
 import { getSubtractedDate } from '@utils';
 import { AudioModel } from '@/modules/audio/audio.model';
-import { DeleteAudioFilter, GetAudiosListParams, UserRef } from '@/modules/audio/audio.interfaces';
+import { DeleteAudioFilter, GetAudiosListParams, UpdateAudioParams, UserRef } from '@/modules/audio/audio.interfaces';
 import { CreateAudioDto } from '@/modules/audio/dto';
-import { UpdateAudioDto } from '@/modules/audio/dto/update-audio.dto';
 import { POPULATE_USER_SELECT_FIELDS } from '@/modules/audio/audio.constants';
 
 @Injectable()
@@ -21,9 +20,9 @@ export class AudioService {
         return newAudio.toObject({ virtuals: true });
     }
 
-    async updateAudio(audio: UpdateAudioDto): Promise<AudioModel> {
+    async updateAudio(params: UpdateAudioParams): Promise<AudioModel> {
         return this.audioRepository
-            .findByIdAndUpdate(audio.id, audio, { new: true })
+            .findOneAndUpdate(params.filter, params.update, { new: true })
             .populate({ path: 'authoredBy', select: POPULATE_USER_SELECT_FIELDS })
             .populate({ path: 'createdBy', select: POPULATE_USER_SELECT_FIELDS })
             .populate({ path: 'deletedBy', select: POPULATE_USER_SELECT_FIELDS })

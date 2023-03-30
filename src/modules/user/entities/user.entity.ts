@@ -1,6 +1,5 @@
 import { modelOptions, prop } from '@typegoose/typegoose';
 import { getDefaultDatabaseSchemaOptions } from '@/config';
-import { UserAccessEntity } from './user-access.entity';
 import { BaseEntity } from '@/shared/entities/base.entity';
 
 @modelOptions({
@@ -27,9 +26,6 @@ export class UserEntity extends BaseEntity {
 
     @prop({ default: null })
     lang?: string;
-
-    @prop({ type: () => UserAccessEntity, _id: false, default: {} })
-    access?: UserAccessEntity;
 
     @prop({ required: true })
     isBot: boolean;

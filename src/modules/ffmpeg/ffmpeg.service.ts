@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as ffmpeg from 'fluent-ffmpeg';
 import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
-import { getCleanAudioOptions } from './interfaces';
+import { getCleanAudioOptions } from './ffmpeg.interface';
 import { flatten, getTempFile } from '@utils';
 import * as fs from 'fs/promises';
 

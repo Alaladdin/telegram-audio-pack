@@ -142,7 +142,6 @@ export class TelegramService {
                 { title: 'firstName', value: user.firstName },
                 { title: 'lastName', value: user.lastName },
                 { title: 'displayName', value: user.displayName },
-                { title: 'access', value: JSON.stringify(user.access, null, 4) },
                 { title: 'lang', value: user.lang },
                 { title: 'updatedAt', value: formatDate(user.updatedAt) },
                 { title: 'createdAt', value: formatDate(user.createdAt) },
@@ -267,7 +266,7 @@ export class TelegramService {
             createdBy,
         });
 
-        return ctx.editMessageText(`\`${ctx.$t('actions.saved')}\``, { parse_mode: 'MarkdownV2' });
+        await ctx.editMessageText(`\`${ctx.$t('actions.saved')}\``, { parse_mode: 'MarkdownV2' });
     }
 
     private getAudioData(data: GetAudioData) {
@@ -291,7 +290,7 @@ export class TelegramService {
     private async onDiscardAudio(ctx: CallbackQueryContext) {
         const message = ctx.$t('actions.discarded');
 
-        return ctx.editMessageText(`\`${message}\``, { parse_mode: 'MarkdownV2' });
+        await ctx.editMessageText(`\`${message}\``, { parse_mode: 'MarkdownV2' });
     }
 
     private async onDeleteAudio(ctx: CallbackQueryContext, audioId: string) {
@@ -314,7 +313,10 @@ export class TelegramService {
     }
 
     private async onRestoreAudio(ctx: CallbackQueryContext, audioId: string) {
-        const updatedAudio = await this.audioService.updateAudio({ id: audioId, deletedAt: null, deletedBy: null });
+        const updatedAudio = await this.audioService.updateAudio({
+            filter: { id: audioId },
+            update: { deletedAt: null, deletedBy: null },
+        });
         let message = ctx.$t('base.not_found');
         let messageExtra: ExtraEditMessageCaption = {};
 
@@ -389,11 +391,12 @@ export class TelegramService {
     }
 
     async onInlineQueryResultChosen(ctx: ChosenInlineResultContext) {
-        // todo personal stats
-        const { from: user } = ctx.chosenInlineResult;
+        const { from: user, result_id: fileUniqueId } = ctx.chosenInlineResult;
 
         await this.userService.createOrUpdateUser(getMappedUser(user));
-
-        console.log('result chosen');
+        await this.audioService.updateAudio({
+            filter: { 'telegramMetadata.fileUniqueId': fileUniqueId },
+            update: { $inc: { usedTimes: 1 } },
+        });
     }
 }
