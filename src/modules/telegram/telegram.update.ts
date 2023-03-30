@@ -46,6 +46,12 @@ export class TelegramUpdate {
         return this.telegramService.onStartCommand(ctx);
     }
 
+    @UseGuards(AdminGuard)
+    @Command('list')
+    async onList(ctx: MessageContext) {
+        return this.telegramService.onGetList(ctx);
+    }
+
     @Command('my_data')
     async onGetMyData(ctx: MessageContext) {
         return this.telegramService.onGetMyData(ctx);
@@ -56,6 +62,7 @@ export class TelegramUpdate {
         return this.telegramService.onDebugCommand(ctx);
     }
 
+    @UseGuards(AdminGuard)
     @On(['voice', 'audio'])
     async onAudio(ctx: AudioContext) {
         return this.telegramService.onAudioMessage(ctx);

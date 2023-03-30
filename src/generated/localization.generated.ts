@@ -19,6 +19,7 @@ export type I18nTranslations = {
     };
     "commands": {
         "start": string;
+        "list": string;
         "top": string;
         "top_personal": string;
         "my_data": string;
