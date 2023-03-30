@@ -1,6 +1,7 @@
 import { Logger, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { InjectBot, Update, Command, On } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
+import { I18nService } from 'nestjs-i18n';
 import {
     AudioContext,
     CallbackQueryContext,
@@ -12,10 +13,9 @@ import {
 import { TelegramLoggerInterceptor } from './interceptors';
 import { AdminGuard } from './guards';
 import { TelegramService } from '@/modules/telegram/telegram.service';
-import { BOT_NAME } from './telegram.constants';
-import { I18nService } from 'nestjs-i18n';
 import { I18nTranslations } from '@/generated/localization.generated';
 import { TelegrafExceptionFilter } from '@/modules/telegram/filters';
+import { BOT_NAME } from './telegram.constants';
 
 @Update()
 @UseInterceptors(TelegramLoggerInterceptor)
@@ -95,6 +95,6 @@ export class TelegramUpdate {
 
     @On('chosen_inline_result')
     async onInlineQueryResultChosen(ctx: ChosenInlineResultContext) {
-        return this.telegramService.updateStats(ctx);
+        return this.telegramService.onInlineQueryResultChosen(ctx);
     }
 }

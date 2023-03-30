@@ -25,9 +25,8 @@ export interface CallbackQueryContext
     extends tgContext<Update.CallbackQueryUpdate<CallbackQueryWithData<CallbackQueryUpdateType>>>,
         BaseContext {}
 
-export interface ChosenInlineResultContext extends tgContext<Update.ChosenInlineResultUpdate>, BaseContext {}
-
 export interface Context extends tgContext, BaseContext {}
 export interface AudioContext extends tgContext<Update.MessageUpdate<Message.AudioMessage>>, BaseContext {}
 export interface MessageContext extends tgContext<Update.MessageUpdate>, BaseContext {}
 export interface InlineQueryContext extends tgContext<Update.InlineQueryUpdate>, BaseContext {}
+export interface ChosenInlineResultContext extends tgContext<Update.ChosenInlineResultUpdate>, BaseContext {}

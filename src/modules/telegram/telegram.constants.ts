@@ -8,7 +8,7 @@ export const ADMINS_IDS = [398532631, 648639475, 865100224, 292285878]; // mine,
 export const BOT_COMMANDS_LIST: (keyof PathValue<I18nTranslations, 'commands'>)[] = [
     'start',
     'top',
-    'top_personal',
+    // 'top_personal',
     'list',
     'my_data',
     'debug',
