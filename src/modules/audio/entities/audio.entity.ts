@@ -1,8 +1,9 @@
-import { modelOptions, prop, Ref } from '@typegoose/typegoose';
+import { modelOptions, plugin, prop, Ref } from '@typegoose/typegoose';
 import { getDefaultDatabaseSchemaOptions } from '@/config';
 import { UserEntity } from '@/modules/user/entities/user.entity';
 import { TelegramAudioEntity } from './telegram-audio.entity';
 import { BaseEntity } from '@entities';
+import { mongooseLeanVirtuals } from 'mongoose-lean-virtuals';
 
 @modelOptions({
     schemaOptions: {
@@ -10,6 +11,7 @@ import { BaseEntity } from '@entities';
         ...getDefaultDatabaseSchemaOptions(),
     },
 })
+@plugin(mongooseLeanVirtuals)
 export class AudioEntity extends BaseEntity {
     @prop({ uniq: true })
     name: string;

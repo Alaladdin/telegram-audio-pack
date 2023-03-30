@@ -16,6 +16,9 @@ export type I18nTranslations = {
     "base": {
         "yes": string;
         "no": string;
+        "not_found": string;
+        "creator": string;
+        "deleter": string;
     };
     "commands": {
         "start": string;

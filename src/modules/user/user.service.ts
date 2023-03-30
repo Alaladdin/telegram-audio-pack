@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from 'nestjs-typegoose';
 import { UserEntity } from './entities';
-import { ModelType } from '@typegoose/typegoose/lib/types';
+import { ReturnModelType } from '@typegoose/typegoose/lib/types';
 import { SetUserDto } from './dto';
 import { UserModel } from './user.model';
 
 @Injectable()
 export class UserService {
-    constructor(@InjectModel(UserEntity) private readonly userRepository: ModelType<UserEntity>) {}
+    constructor(@InjectModel(UserEntity) private readonly userRepository: ReturnModelType<typeof UserEntity>) {}
 
     async createOrUpdateUser(user: SetUserDto): Promise<UserModel> {
         const filter = { userId: user.userId };

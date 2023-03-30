@@ -1,4 +1,7 @@
 {
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "not_found": "Not found",
+  "creator": "Creator",
+  "deleter": "Deleter"
 }
