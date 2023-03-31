@@ -24,13 +24,14 @@ export type I18nTranslations = {
         "start": string;
         "list": string;
         "top": string;
-        "top_personal": string;
         "my_data": string;
         "debug": string;
     };
     "errors": {
         "base_error": string;
         "not_admin": string;
+        "cannot_delete_other_user": string;
+        "command_for_private_chat_only": string;
     };
     "replies": {
         "greeting": string;

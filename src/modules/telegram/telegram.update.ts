@@ -11,7 +11,7 @@ import {
     MessageContext,
 } from './interfaces';
 import { TelegramLoggerInterceptor } from './interceptors';
-import { AdminGuard } from './guards';
+import { AdminGuard, PrivateChatGuard } from './guards';
 import { TelegramService } from '@/modules/telegram/telegram.service';
 import { I18nTranslations } from '@/generated/localization.generated';
 import { TelegrafExceptionFilter } from '@/modules/telegram/filters';
@@ -48,12 +48,7 @@ export class TelegramUpdate {
         return this.telegramService.onGetTop(ctx);
     }
 
-    @Command('top_personal')
-    async onTopPersonal(ctx: MessageContext) {
-        return this.telegramService.onStartCommand(ctx);
-    }
-
-    @UseGuards(AdminGuard)
+    @UseGuards(AdminGuard, PrivateChatGuard)
     @Command('list')
     async onList(ctx: MessageContext) {
         return this.telegramService.onGetList(ctx);
@@ -77,13 +72,11 @@ export class TelegramUpdate {
 
     @On('callback_query')
     async onCallbackQuery(ctx: CallbackQueryContext) {
+        /* prettier-ignore */
         return this.telegramService
             .onCallbackQuery(ctx)
-            .then(() => {
+            .finally(() => {
                 ctx.answerCbQuery();
-            })
-            .catch((err) => {
-                throw err;
             });
     }
 

@@ -2,7 +2,6 @@
   "start": "init bot",
   "list": "audios list (admins only)",
   "top": "top audios",
-  "top_personal": "your top audios",
   "my_data": "your personal info, we hold about you",
   "debug": "debug info"
 }

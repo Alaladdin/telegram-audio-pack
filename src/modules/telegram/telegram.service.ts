@@ -25,6 +25,7 @@ import { AudioService } from '@/modules/audio/audio.service';
 import { AudioModel } from '@/modules/audio/audio.model';
 import { getMappedTelegramAudio, getMappedUser } from './utils';
 import { ExtraEditMessageCaption } from 'telegraf/typings/telegram-types';
+import { TelegrafException } from 'nestjs-telegraf';
 
 @Injectable()
 export class TelegramService {
@@ -235,6 +236,8 @@ export class TelegramService {
             const message = isDeleted ? ctx.$t('actions.deleted') : ctx.$t('base.not_found');
 
             await ctx.editMessageText(`\`${message}\``, { parse_mode: 'MarkdownV2' });
+        } else {
+            throw new TelegrafException(ctx.$t('errors.cannot_delete_other_user'));
         }
     }
 
@@ -297,16 +300,13 @@ export class TelegramService {
         const user = await this.userService.getUser(ctx.from.id);
         const deletedAudio = await this.audioService.deleteAudio({ _id: audioId }, user);
         let message = ctx.$t('base.not_found');
-        let messageExtra: ExtraEditMessageCaption = {};
+        const messageExtra: ExtraEditMessageCaption = { parse_mode: 'MarkdownV2' };
 
         if (deletedAudio) {
             const messageInfo = this.getMessageInfo(ctx, deletedAudio);
 
             message = messageInfo.message;
-            messageExtra = {
-                parse_mode: 'MarkdownV2',
-                reply_markup: { inline_keyboard: messageInfo.inlineKeyboard },
-            };
+            messageExtra.reply_markup = { inline_keyboard: messageInfo.inlineKeyboard };
         }
 
         await ctx.editMessageCaption(message, messageExtra);
@@ -314,20 +314,17 @@ export class TelegramService {
 
     private async onRestoreAudio(ctx: CallbackQueryContext, audioId: string) {
         const updatedAudio = await this.audioService.updateAudio({
-            filter: { id: audioId },
+            filter: { _id: audioId },
             update: { deletedAt: null, deletedBy: null },
         });
         let message = ctx.$t('base.not_found');
-        let messageExtra: ExtraEditMessageCaption = {};
+        const messageExtra: ExtraEditMessageCaption = { parse_mode: 'MarkdownV2' };
 
         if (updatedAudio) {
             const messageInfo = this.getMessageInfo(ctx, updatedAudio);
 
             message = messageInfo.message;
-            messageExtra = {
-                parse_mode: 'MarkdownV2',
-                reply_markup: { inline_keyboard: messageInfo.inlineKeyboard },
-            };
+            messageExtra.reply_markup = { inline_keyboard: messageInfo.inlineKeyboard };
         }
 
         await ctx.editMessageCaption(message, messageExtra);
@@ -343,10 +340,9 @@ export class TelegramService {
         ];
 
         if (audio.deletedAt) {
-            inlineKeyboard.push(Markup.button.callback(this.i18n.t('actions.restore'), `RESTORE_AUDIO:${audio.id}`));
+            inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.restore'), `RESTORE_AUDIO:${audio.id}`));
         } else {
-            // inlineKeyboard.push(Markup.button.callback(this.i18n.t('actions.rename'), `RENAME_AUDIO:${audio.id}`));
-            inlineKeyboard.push(Markup.button.callback(this.i18n.t('actions.delete'), `DELETE_AUDIO:${audio.id}`));
+            inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.delete'), `DELETE_AUDIO:${audio.id}`));
         }
 
         return {

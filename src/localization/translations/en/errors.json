@@ -1,4 +1,6 @@
 {
   "base_error": "Error: {message}",
-  "not_admin": "you are not admin \uD83D\uDE21"
+  "not_admin": "you are not admin \uD83D\uDE21",
+  "cannot_delete_other_user": "you cannot delete other user data",
+  "command_for_private_chat_only": "command for private chats only"
 }
