@@ -16,7 +16,7 @@ import {
     MessageContext,
     UserData,
 } from './interfaces';
-import { ADMINS_IDS, AUDIO_DEFAULT_NAME_PREFIX, BOT_COMMANDS_LIST } from './telegram.constants';
+import { ADMINS_IDS, AUDIO_DEFAULT_NAME_PREFIX, BOT_COMMANDS_LIST, TOP_AUDIOS_LIMIT } from './telegram.constants';
 import { FfmpegService } from '@/modules/ffmpeg/ffmpeg.service';
 import { formatDate } from '@utils';
 import { UserService } from '@/modules/user/user.service';
@@ -59,17 +59,47 @@ export class TelegramService {
         const user = await this.userService.createOrUpdateUser(getMappedUser(ctx.from));
         const message = ctx.$t('replies.greeting', { args: { name: user.displayName } });
 
-        await ctx.$replyWithMarkdown(message);
+        await ctx.$replyWithMDCode(message);
     }
 
-    async onGetTop(ctx: MessageContext) {
+    async onHelpCommand(ctx: Context) {
+        const message = [
+            '`- При некоторых действиях, создается/обновляется запись в базе о пользователе`',
+            '`- Данные можно проверить/удалить через команду` /my_data',
+            `\`- Использование бота: введите\` \`@${ctx.botInfo.username}\` \`в любом чате\``,
+        ];
+
+        if (ctx.isAdmin) {
+            message.push(
+                '\n*# Добавление новых аудиозаписей*',
+                '`- Можно отправить боту как файл, так и переслать уже готовый войс/аудиофайл из телеграма`',
+                '`- Чтобы установить название аудио, нужно при отправке указать его в сообщении`',
+                '`- Если переслать боту чужое аудио, то автором будете не вы, а этот пользователь (если его профиль не скрыт для пересылаемых сообщений)`',
+                '`! Переименование существующих аудиозаписей еще не реализовано`',
+                '`! Есть проблема с длинными mp3 файлами, они обрезаются по какой-то причине при сохранении`',
+                '`! Протестировано с .ogg/.mp3`',
+
+                '\n*# Удаление/восстановление аудиозаписей*',
+                '`- Осуществляется управление через команду` /list',
+                '`- Удаляются не сразу, а по прошествии 24 часов. В это время восстановить файл`',
+                '`- Помеченные для удаления аудиозаписи сразу же убираются из выбора для отправки`',
+
+                '\n*# Нюансы*',
+                '`- Админы не могут удалить информацию о себе в базе из-за того, что нарушатся связи в базе (между пользователем и аудиозаписями, которые он создал)`',
+            );
+        }
+
+        await ctx.$replyWithMD(message.join('\n'));
+    }
+
+    async onTopCommand(ctx: MessageContext) {
         const audiosList = await this.audioService.getAudiosList({
             filter: { deletedAt: null },
-            options: { limit: 5, sort: { usedTimes: 'desc' } },
+            options: { limit: TOP_AUDIOS_LIMIT, sort: { usedTimes: 'desc' } },
         });
 
         if (audiosList.length) {
-            await ctx.$sendMessageWithMarkdown(ctx.$t('replies.top_audios_list'));
+            await ctx.$sendMessageWithMD(ctx.$t('replies.top_audios', { args: { count: TOP_AUDIOS_LIMIT } }));
 
             each(audiosList, (audio) => {
                 const message = ctx.$t('replies.used_times', { args: { count: audio.usedTimes } });
@@ -90,17 +120,17 @@ export class TelegramService {
                 );
             });
         } else {
-            await ctx.$sendMessageWithMarkdown('No audios');
+            await ctx.$sendMessageWithMD('No audios');
         }
     }
 
-    async onGetList(ctx: Context) {
+    async onListCommand(ctx: Context) {
         const audiosList = await this.audioService.getAudiosList({
             options: { sort: { createdAt: 'desc' } },
         });
 
         if (audiosList.length) {
-            await ctx.$sendMessageWithMarkdown(ctx.$t('replies.audios_list'));
+            await ctx.$sendMessageWithMD(ctx.$t('replies.audios_list'));
 
             each(audiosList, (audio) => {
                 const messageInfo = this.getMessageInfo(ctx, audio);
@@ -122,11 +152,11 @@ export class TelegramService {
                 );
             });
         } else {
-            await ctx.$sendMessageWithMarkdown('No audios');
+            await ctx.$sendMessageWithMD('No audios');
         }
     }
 
-    async onGetMyData(ctx: MessageContext) {
+    async onMyDataCommand(ctx: MessageContext) {
         const user = await this.userService.getUser(ctx.from.id);
         let message = ctx.$t('base.not_found');
         let messageExtra = {};
@@ -152,7 +182,7 @@ export class TelegramService {
             message = map(rawMessageList, (message) => `${message.title}: ${message.value ?? EMPTY_VALUE}`).join('\n');
         }
 
-        await ctx.$replyWithMarkdown(message, messageExtra);
+        await ctx.$replyWithMDCode(message, messageExtra);
     }
 
     async onDebugCommand(ctx: MessageContext) {
@@ -161,18 +191,19 @@ export class TelegramService {
         const userTag = from.username ? `@${from.username}` : EMPTY_VALUE;
         const appVersion = this.configService.get('npm_package_version');
         const message = [
-            `\\# *bot*`,
+            '*# bot*',
             `\`version: ${appVersion}\``,
             `\`name: ${botInfo.first_name}\``,
             `\`username: @${botInfo.username}\``,
             `\`adminsCount: ${ADMINS_IDS.length}\``,
             `\`isProduction: ${this.isProd}\``,
 
-            `\n\\# *chat*`,
+            '\n*# chat*',
             `\`id: ${chat.id}\``,
+            `\`title: ${'title' in chat ? chat.title : EMPTY_VALUE}\``,
             `\`type: ${chat.type}\``,
 
-            `\n\\# *user*`,
+            '\n*# user*',
             `\`id: ${from.id}\``,
             `\`username: ${userTag}\``,
             `\`fullName: ${fullName}\``,
@@ -180,7 +211,7 @@ export class TelegramService {
             `\`isAdmin: ${ADMINS_IDS.includes(from.id)}\``,
         ];
 
-        await ctx.replyWithMarkdownV2(message.join('\n'));
+        await ctx.$replyWithMD(message.join('\n'));
     }
 
     async onAudioMessage(ctx: AudioContext) {
@@ -196,7 +227,7 @@ export class TelegramService {
                 ],
             ]);
 
-            await ctx.$replyWithMarkdown(message, inlineKeyboard);
+            await ctx.$replyWithMD(message, inlineKeyboard);
         }
     }
 

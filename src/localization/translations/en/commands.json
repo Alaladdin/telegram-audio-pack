@@ -3,5 +3,6 @@
   "list": "audios list (admins only)",
   "top": "top audios",
   "my_data": "your personal info, we hold about you",
+  "help": "get help",
   "debug": "debug info"
 }

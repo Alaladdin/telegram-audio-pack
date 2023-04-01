@@ -1,7 +1,8 @@
 import { TelegramAudio, TelegramUser } from '@/modules/telegram/interfaces';
 import { SetUserDto } from '@/modules/user/dto';
-import { UNKNOWN_USER_NAME } from '@/modules/telegram/telegram.constants';
+import { CHARS_TO_MD_ESCAPE, UNKNOWN_USER_NAME } from '@/modules/telegram/telegram.constants';
 import { CreateAudioDto } from '@/modules/audio/dto';
+import { map } from '@utils';
 
 export const getMappedTelegramAudio = (audio: TelegramAudio): CreateAudioDto['telegramMetadata'] => ({
     fileId: audio.file_id,
@@ -28,4 +29,10 @@ export const getDisplayName = (user?: TelegramUser) => {
     const lastName = user.last_name;
 
     return lastName ? `${firstName} ${lastName}` : firstName;
+};
+
+export const getEscapedMessage = (message: string) => {
+    const replacer = (char: string) => (CHARS_TO_MD_ESCAPE.includes(char) ? `\\${char}` : char);
+
+    return map(message.split(''), replacer).join('');
 };

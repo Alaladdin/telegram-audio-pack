@@ -1,6 +1,6 @@
 {
   "greeting": "Приветствую, {name}",
   "audios_list": "Список аудиозаписей",
-  "top_audios_list": "Топ аудиозаписей",
+  "top_audios": "Топ {count} аудиозаписей",
   "used_times": "Использовано раз: {count}"
 }

@@ -25,6 +25,7 @@ export type I18nTranslations = {
         "list": string;
         "top": string;
         "my_data": string;
+        "help": string;
         "debug": string;
     };
     "errors": {
@@ -36,7 +37,7 @@ export type I18nTranslations = {
     "replies": {
         "greeting": string;
         "audios_list": string;
-        "top_audios_list": string;
+        "top_audios": string;
         "used_times": string;
     };
 };

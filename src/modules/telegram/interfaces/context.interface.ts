@@ -8,8 +8,9 @@ export type ExtraSendMessage = Parameters<tgContext['sendMessage']>['1'];
 interface BaseContext {
     isAdmin: boolean;
     $t: (key: I18nKey, options?: TranslateOptions) => string;
-    $sendMessageWithMarkdown: (message: string, extra?: ExtraSendMessage) => ReturnType<tgContext['sendMessage']>;
-    $replyWithMarkdown: (message: string, extra?: ExtraReplyMessage) => ReturnType<tgContext['replyWithMarkdownV2']>;
+    $sendMessageWithMD: (message: string, extra?: ExtraSendMessage) => ReturnType<tgContext['sendMessage']>;
+    $replyWithMD: (message: string, extra?: ExtraReplyMessage) => ReturnType<tgContext['replyWithMarkdownV2']>;
+    $replyWithMDCode: (message: string, extra?: ExtraReplyMessage) => ReturnType<tgContext['replyWithMarkdownV2']>;
 }
 
 interface CallbackQueryWithData<T extends Message.CommonMessage> extends Omit<CallbackQuery.DataQuery, 'message'> {

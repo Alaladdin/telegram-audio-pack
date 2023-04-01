@@ -44,19 +44,19 @@ export class TelegramUpdate {
     }
 
     @Command('top')
-    async onGetTop(ctx: MessageContext) {
-        return this.telegramService.onGetTop(ctx);
+    async onTopCommand(ctx: MessageContext) {
+        return this.telegramService.onTopCommand(ctx);
     }
 
     @UseGuards(AdminGuard, PrivateChatGuard)
     @Command('list')
-    async onList(ctx: MessageContext) {
-        return this.telegramService.onGetList(ctx);
+    async onListCommand(ctx: MessageContext) {
+        return this.telegramService.onListCommand(ctx);
     }
 
     @Command('my_data')
-    async onGetMyData(ctx: MessageContext) {
-        return this.telegramService.onGetMyData(ctx);
+    async onMyDataCommand(ctx: MessageContext) {
+        return this.telegramService.onMyDataCommand(ctx);
     }
 
     @Command('debug')
