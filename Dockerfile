@@ -5,11 +5,6 @@ WORKDIR /usr/src/app
 COPY package.json ./
 COPY yarn.lock ./
 
-RUN npm config rm proxy
-RUN npm config rm https-proxy
-RUN yarn config delete https-proxy
-RUN yarn config delete proxy
-
 RUN yarn install --frozen-lockfile --link-duplicates --network-timeout 1000000
 
 COPY . .
