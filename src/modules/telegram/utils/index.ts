@@ -13,10 +13,10 @@ export const getMappedTelegramAudio = (audio: TelegramAudio): CreateAudioDto['te
 
 export const getMappedUser = (user: TelegramUser): SetUserDto => ({
     userId: user.id,
-    username: user.username,
+    username: user.username || null,
     displayName: getDisplayName(user),
     firstName: user.first_name,
-    lastName: user.last_name,
+    lastName: user.last_name || null,
     lang: user.language_code,
     isBot: user.is_bot,
 });

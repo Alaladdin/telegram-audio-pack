@@ -1,11 +1,12 @@
 import { BaseModel } from '@/shared/models';
+import { Nullable } from '@types';
 
 export class UserModel extends BaseModel {
     userId: number;
-    username?: string;
+    username: Nullable<string>;
     displayName: string;
     firstName: string;
-    lastName?: string;
+    lastName: Nullable<string>;
     lang?: string;
     isBot: boolean;
 }

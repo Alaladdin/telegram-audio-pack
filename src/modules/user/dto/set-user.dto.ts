@@ -1,9 +1,11 @@
+import { Nullable } from '@types';
+
 export class SetUserDto {
     userId: number;
-    username?: string;
+    username: Nullable<string>;
     displayName: string;
     firstName: string;
-    lastName?: string;
+    lastName: Nullable<string>;
     lang?: string;
     isBot?: boolean;
 }
