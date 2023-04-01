@@ -19,10 +19,11 @@ export class FfmpegService {
 
     private async getCleanAudioPath({ url, title }: getCleanAudioOptions): Promise<string> {
         const tempFilePath = await getTempFile();
+        const audioTitle = this.getFileName(title);
         const outputOptions = flatten([
             ['-safe', '0'],
             ['-map_metadata', '-1'],
-            ['-metadata', `title="${title}"`],
+            ['-metadata', `title="${audioTitle}"`],
         ]);
 
         return new Promise((resolve, reject) => {
@@ -49,5 +50,9 @@ export class FfmpegService {
                 })
                 .save(tempFilePath);
         });
+    }
+
+    private getFileName(name: string) {
+        return name.replace(/[\/\\'":*?<>]/g, '').replace(/\s/g, '_');
     }
 }
