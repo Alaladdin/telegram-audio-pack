@@ -1,64 +1,63 @@
 module.exports = {
-  parser: '@typescript-eslint/parser',
-  parserOptions: {
-    project: 'tsconfig.json',
-    tsconfigRootDir: __dirname,
-    sourceType: 'module',
-  },
-  plugins: ['@typescript-eslint/eslint-plugin'],
-  extends: [
-    'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
-  ],
-  root: true,
-  env: {
-    node: true,
-    jest: true,
-  },
-  ignorePatterns: ['.eslintrc.js'],
-  rules: {
-    '@typescript-eslint/interface-name-prefix': 'off',
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-empty-interface': 'off',
+    parser: '@typescript-eslint/parser',
+    parserOptions: {
+        project: 'tsconfig.json',
+        tsconfigRootDir: __dirname,
+        sourceType: 'module',
+    },
+    plugins: ['@typescript-eslint/eslint-plugin'],
+    extends: ['plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
+    root: true,
+    env: {
+        node: true,
+        jest: true,
+    },
+    ignorePatterns: ['.eslintrc.js'],
+    rules: {
+        '@typescript-eslint/interface-name-prefix': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
 
-    // PRETTIER
-    'prettier/prettier': ['error', { printWidth: 120 }],
+        '@typescript-eslint/no-unused-vars': 'error',
 
-    // CUSTOM
-    'padding-line-between-statements': [
-      'error',
-      {
-        blankLine: 'always',
-        prev: '*',
-        next: 'return',
-      },
-      {
-        blankLine: 'always',
-        prev: ['const', 'let'],
-        next: '*',
-      },
-      {
-        blankLine: 'any',
-        prev: ['const', 'let'],
-        next: ['const', 'let'],
-      },
-      {
-        blankLine: 'always',
-        prev: ['if', 'case', 'default'],
-        next: '*',
-      },
-      {
-        blankLine: 'always',
-        prev: '*',
-        next: ['if', 'case', 'default'],
-      },
-      {
-        blankLine: 'any',
-        prev: ['if', 'case', 'default'],
-        next: ['if', 'case', 'default'],
-      },
-    ],
-  },
+        // PRETTIER
+        'prettier/prettier': ['error', { printWidth: 120 }],
+
+        // CUSTOM
+        'padding-line-between-statements': [
+            'error',
+            {
+                blankLine: 'always',
+                prev: '*',
+                next: 'return',
+            },
+            {
+                blankLine: 'always',
+                prev: ['const', 'let'],
+                next: '*',
+            },
+            {
+                blankLine: 'any',
+                prev: ['const', 'let'],
+                next: ['const', 'let'],
+            },
+            {
+                blankLine: 'always',
+                prev: ['if', 'case', 'default'],
+                next: '*',
+            },
+            {
+                blankLine: 'always',
+                prev: '*',
+                next: ['if', 'case', 'default'],
+            },
+            {
+                blankLine: 'any',
+                prev: ['if', 'case', 'default'],
+                next: ['if', 'case', 'default'],
+            },
+        ],
+    },
 };

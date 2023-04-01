@@ -43,6 +43,11 @@ export class TelegramUpdate {
         return this.telegramService.onStartCommand(ctx);
     }
 
+    @Command('help')
+    async onHelp(ctx: MessageContext) {
+        return this.telegramService.onHelpCommand(ctx);
+    }
+
     @Command('top')
     async onTopCommand(ctx: MessageContext) {
         return this.telegramService.onTopCommand(ctx);

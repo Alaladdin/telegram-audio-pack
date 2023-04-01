@@ -66,6 +66,7 @@ export class TelegramService {
         const message = [
             '`- При некоторых действиях, создается/обновляется запись в базе о пользователе`',
             '`- Данные можно проверить/удалить через команду` /my_data',
+            '`- Бот использует язык, который у вас в телеграме`',
             `\`- Использование бота: введите\` \`@${ctx.botInfo.username}\` \`в любом чате\``,
         ];
 
@@ -162,7 +163,12 @@ export class TelegramService {
         let messageExtra = {};
 
         if (user) {
-            if (!ctx.isAdmin) {
+            const authoredAudios = await this.audioService.getAudiosList({ filter: { authoredBy: user._id } });
+            const createdAudios = await this.audioService.getAudiosList({ filter: { createdBy: user._id } });
+            const authoredAudiosCount = authoredAudios.length;
+            const createdAudiosCount = createdAudios.length;
+
+            if (!ctx.isAdmin && !authoredAudiosCount && !createdAudiosCount) {
                 messageExtra = Markup.inlineKeyboard([
                     [Markup.button.callback(ctx.$t('actions.delete'), 'DELETE_MY_DATA')],
                 ]);
@@ -170,10 +176,13 @@ export class TelegramService {
 
             const rawMessageList: UserData[] = [
                 { title: 'userId', value: user.userId },
+                { title: 'username', value: user.username },
                 { title: 'firstName', value: user.firstName },
                 { title: 'lastName', value: user.lastName },
                 { title: 'displayName', value: user.displayName },
                 { title: 'lang', value: user.lang },
+                { title: 'authoredAudios', value: authoredAudiosCount },
+                { title: 'createdAudios', value: createdAudiosCount },
                 { title: 'updatedAt', value: formatDate(user.updatedAt) },
                 { title: 'createdAt', value: formatDate(user.createdAt) },
                 { title: 'isBot', value: user.isBot },

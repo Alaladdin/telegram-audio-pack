@@ -5,8 +5,8 @@ export interface TelegramUser extends Omit<User, 'is_premium' | 'added_to_attach
 export interface TelegramAudio extends Audio, Voice {}
 
 export interface UserData {
-    title: keyof UserModel;
-    value: UserModel[UserData['title']];
+    title: keyof UserModel | string;
+    value?: string | number | boolean | null;
 }
 
 export interface GetAudioData {
