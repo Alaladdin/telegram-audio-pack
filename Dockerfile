@@ -10,7 +10,7 @@ RUN npm config rm https-proxy
 RUN yarn config delete https-proxy
 RUN yarn config delete proxy
 
-RUN yarn install --frozen-lockfile --link-duplicates
+RUN yarn install --frozen-lockfile --link-duplicates --network-timeout 1000000
 
 COPY . .
 
@@ -23,7 +23,7 @@ WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/package.json ./
 
-RUN yarn install --frozen-lockfile --link-duplicates --production
+RUN yarn install --frozen-lockfile --link-duplicates --network-timeout 1000000 --production
 
 FROM node:16-alpine
 
