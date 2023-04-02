@@ -4,6 +4,7 @@ import { I18nTranslations } from '@/generated/localization.generated';
 export const BOT_NAME = 'Audio Pack Bot';
 export const AUDIO_DEFAULT_NAME_PREFIX = 'audio_by_';
 export const TOP_AUDIOS_LIMIT = 5;
+export const INLINE_QUERY_LIMIT = 50;
 export const UNKNOWN_USER_NAME = 'INCOGNITO';
 export const OWNER_ID = 398532631;
 export const ADMINS_IDS = [OWNER_ID, 648639475, 865100224, 292285878, 541357698]; // mine, vova, popov, nikita, gera

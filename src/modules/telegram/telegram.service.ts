@@ -16,14 +16,20 @@ import {
     MessageContext,
     UserData,
 } from './interfaces';
-import { ADMINS_IDS, AUDIO_DEFAULT_NAME_PREFIX, BOT_COMMANDS_LIST, TOP_AUDIOS_LIMIT } from './telegram.constants';
+import {
+    ADMINS_IDS,
+    AUDIO_DEFAULT_NAME_PREFIX,
+    BOT_COMMANDS_LIST,
+    INLINE_QUERY_LIMIT,
+    TOP_AUDIOS_LIMIT,
+} from './telegram.constants';
 import { FfmpegService } from '@/modules/ffmpeg/ffmpeg.service';
 import { formatDate } from '@utils';
 import { UserService } from '@/modules/user/user.service';
 import { EMPTY_VALUE } from '@constants';
 import { AudioService } from '@/modules/audio/audio.service';
 import { AudioModel } from '@/modules/audio/audio.model';
-import { getMappedTelegramAudio, getMappedUser } from './utils';
+import { getEscapedMessage, getMappedTelegramAudio, getMappedUser } from './utils';
 import { ExtraEditMessageCaption } from 'telegraf/typings/telegram-types';
 import { TelegrafException } from 'nestjs-telegraf';
 
@@ -67,7 +73,8 @@ export class TelegramService {
             '`- При некоторых действиях, создается/обновляется запись в базе о пользователе`',
             '`- Данные можно проверить/удалить через команду` /my_data',
             '`- Бот использует язык, который у вас в телеграме`',
-            `\`- Использование бота: введите\` \`@${ctx.botInfo.username}\` \`в любом чате\``,
+            `\`- Использование бота: введите\` \`@${ctx.me}\` \`в любом чате\``,
+            `\`- Поиск осуществляется по названию аудио, имени автора или создателя\``,
         ];
 
         if (ctx.isAdmin) {
@@ -87,6 +94,11 @@ export class TelegramService {
 
                 '\n*# Нюансы*',
                 '`- Админы не могут удалить информацию о себе в базе из-за того, что нарушатся связи в базе (между пользователем и аудиозаписями, которые он создал)`',
+
+                '\n*# Терминология*',
+                '`- Автор: тот, кто записал аудио (создатель, если автора нет)`',
+                '`- Создатель: тот, кто добавил аудио в бота (сохранил)`',
+                '`- Удалятель: тот, кто удалил`',
             );
         }
 
@@ -289,7 +301,7 @@ export class TelegramService {
         const audio = replyMessage.voice || replyMessage.audio;
         const audioURL = await ctx.telegram.getFileLink(audio.file_id);
         const authoredBy = await this.userService.createOrUpdateUser(getMappedUser(author));
-        const createdBy = await this.userService.getUser(query.from.id);
+        const createdBy = await this.userService.createOrUpdateUser(getMappedUser(query.from));
 
         const audioData = replyMessage.voice
             ? this.getVoiceData({ author: authoredBy })
@@ -300,7 +312,13 @@ export class TelegramService {
             title: replyMessage.caption || audioData.title,
         });
 
-        const { voice: newVoice } = await ctx.replyWithVoice({ source: fileBuffer });
+        const { voice: newVoice } = await ctx.replyWithVoice(
+            { source: fileBuffer },
+            {
+                parse_mode: 'MarkdownV2',
+                caption: getEscapedMessage(`\`${replyMessage.caption || audioData.title}\``),
+            },
+        );
 
         await this.audioService.createAudio({
             name: replyMessage.caption || audioData.title,
@@ -338,7 +356,7 @@ export class TelegramService {
     }
 
     private async onDeleteAudio(ctx: CallbackQueryContext, audioId: string) {
-        const user = await this.userService.getUser(ctx.from.id);
+        const user = await this.userService.createOrUpdateUser(getMappedUser(ctx.from));
         const deletedAudio = await this.audioService.deleteAudio({ _id: audioId }, user);
         let message = ctx.$t('base.not_found');
         const messageExtra: ExtraEditMessageCaption = { parse_mode: 'MarkdownV2' };
@@ -386,8 +404,10 @@ export class TelegramService {
             inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.delete'), `DELETE_AUDIO:${audio.id}`));
         }
 
+        const message = map(messageList, (message) => `\`${message.join(': ')}\``).join('\n');
+
         return {
-            message: map(messageList, (message) => `\`${message.join(': ')}\``).join('\n'),
+            message: getEscapedMessage(message),
             inlineKeyboard: [inlineKeyboard],
         };
     }
@@ -397,7 +417,16 @@ export class TelegramService {
         const searchRegex = new RegExp(searchText, 'i');
         const rawAudios = await this.audioService.getAudiosList({
             filter: { deletedAt: null },
-            options: { sort: { usedTimes: 'desc' } },
+            options: {
+                sort: { usedTimes: 'desc' },
+                limit: INLINE_QUERY_LIMIT,
+                select: {
+                    name: 1,
+                    telegramMetadata: 1,
+                    authoredBy: 1,
+                    createdBy: 1,
+                },
+            },
         });
 
         const audios = filter(rawAudios, (audio) => {
