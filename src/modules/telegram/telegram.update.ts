@@ -40,41 +40,49 @@ export class TelegramUpdate {
 
     @Command('start')
     async onStart(ctx: MessageContext) {
+        await ctx.sendChatAction('typing');
+
         return this.telegramService.onStartCommand(ctx);
     }
 
     @Command('help')
     async onHelp(ctx: MessageContext) {
+        await ctx.sendChatAction('typing');
+
         return this.telegramService.onHelpCommand(ctx);
     }
 
     @Command('top')
     async onTopCommand(ctx: MessageContext) {
+        await ctx.sendChatAction('typing');
+
         return this.telegramService.onTopCommand(ctx);
     }
 
     @UseGuards(AdminGuard, PrivateChatGuard)
     @Command('list')
     async onListCommand(ctx: MessageContext) {
-        return this.telegramService.onListCommand(ctx);
-    }
+        await ctx.sendChatAction('typing');
 
-    @Command('my_data')
-    async onMyDataCommand(ctx: MessageContext) {
-        return this.telegramService.onMyDataCommand(ctx);
+        return this.telegramService.onListCommand(ctx);
     }
 
     @Command('debug')
     async onDebug(ctx: MessageContext) {
+        await ctx.sendChatAction('typing');
+
         return this.telegramService.onDebugCommand(ctx);
     }
 
     @UseGuards(AdminGuard)
     @On(['voice', 'audio'])
     async onAudio(ctx: AudioContext) {
+        await ctx.sendChatAction('record_voice');
+
         return this.telegramService.onAudioMessage(ctx);
     }
 
+    @UseGuards(AdminGuard)
     @On('callback_query')
     async onCallbackQuery(ctx: CallbackQueryContext) {
         /* prettier-ignore */

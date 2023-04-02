@@ -8,7 +8,6 @@ import { BOT_NAME } from '@/modules/telegram/telegram.constants';
 import { I18nService } from 'nestjs-i18n';
 import { HttpModule } from '@nestjs/axios';
 import { FfmpegModule } from '@/modules/ffmpeg/ffmpeg.module';
-import { UserModule } from '@/modules/user/user.module';
 import { AudioModule } from '@/modules/audio/audio.module';
 
 @Module({
@@ -22,7 +21,6 @@ import { AudioModule } from '@/modules/audio/audio.module';
             useFactory: getTelegramConfig,
         }),
         AudioModule,
-        UserModule,
         FfmpegModule,
     ],
     providers: [TelegramUpdate, TelegramService],

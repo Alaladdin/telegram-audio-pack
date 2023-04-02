@@ -6,6 +6,7 @@ import { I18nKey } from '@/shared/types/18n.types';
 
 export type ExtraSendMessage = Parameters<tgContext['sendMessage']>['1'];
 interface BaseContext {
+    displayName: string;
     isAdmin: boolean;
     $t: (key: I18nKey, options?: TranslateOptions) => string;
     $sendMessageWithMD: (message: string, extra?: ExtraSendMessage) => ReturnType<tgContext['sendMessage']>;
@@ -15,7 +16,7 @@ interface BaseContext {
 
 interface CallbackQueryWithData<T extends Message.CommonMessage> extends Omit<CallbackQuery.DataQuery, 'message'> {
     message: Omit<Message.CommonMessage, 'reply_to_message'> & { from: User; reply_to_message: T };
-    data: 'SAVE_AUDIO' | 'DISCARD_AUDIO' | 'RESTORE_AUDIO' | 'RENAME_AUDIO' | 'DELETE_AUDIO' | 'DELETE_MY_DATA';
+    data: 'SAVE_AUDIO' | 'DISCARD_AUDIO' | 'RESTORE_AUDIO' | 'RENAME_AUDIO' | 'DELETE_AUDIO';
 }
 
 export type CallbackQueryUpdateType =

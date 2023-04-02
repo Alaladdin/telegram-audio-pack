@@ -12,7 +12,6 @@ export const BOT_COMMANDS_LIST: (keyof PathValue<I18nTranslations, 'commands'>)[
     'start',
     'top',
     'list',
-    'my_data',
     'help',
     'debug',
 ];

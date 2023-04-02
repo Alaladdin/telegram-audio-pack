@@ -14,6 +14,7 @@ export const filter = _.filter;
 export const reject = _.reject;
 export const some = _.some;
 export const keys = _.keys;
+export const sortBy = _.sortBy;
 export const flatten = _.flatten;
 
 export const formatDate = (date: moment.MomentInput, format = 'HH:mm DD.MM.YYYY') => moment(date).format(format);

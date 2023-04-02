@@ -1,10 +1,11 @@
 import { Context } from '@/modules/telegram/interfaces/context.interface';
 import { ADMINS_IDS } from '@/modules/telegram/telegram.constants';
-import { getEscapedMessage } from '@/modules/telegram/utils';
+import { getDisplayName, getEscapedMessage } from '@/modules/telegram/utils';
 
 export const baseMiddleware = (ctx: Context, next: () => Promise<void>) => {
     const user = ctx.from;
 
+    ctx.displayName = getDisplayName(user);
     ctx.isAdmin = !!user && ADMINS_IDS.includes(user.id);
 
     ctx.$sendMessageWithMD = (message, extra) => {
