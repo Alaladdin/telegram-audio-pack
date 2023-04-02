@@ -8,6 +8,22 @@ export class AudioController {
 
     constructor(private readonly audioService: AudioService) {}
 
+    @Cron(CronExpression.EVERY_HOUR)
+    async updateCaches() {
+        const start = Date.now();
+
+        this.logger.debug('Updating caches');
+
+        await this.audioService
+            .updateCaches()
+            .then(() => {
+                this.logger.debug(`Caches updated: ${Date.now() - start}ms`);
+            })
+            .catch((e) => {
+                this.logger.error(e);
+            });
+    }
+
     @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
     async deleteOldAudios() {
         const start = Date.now();

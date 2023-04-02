@@ -4,9 +4,9 @@ import { AudioEntity } from './entities';
 import { ReturnModelType } from '@typegoose/typegoose/lib/types';
 import { getSubtractedDate } from '@utils';
 import { AudioModel } from '@/modules/audio/audio.model';
-import { DeleteAudioFilter, GetAudiosListParams, UpdateAudioParams, UserRef } from '@/modules/audio/audio.interfaces';
+import { DeleteAudioFilter, GetAudiosListParams, UpdateAudioParams } from '@/modules/audio/audio.interfaces';
 import { CreateAudioDto } from '@/modules/audio/dto';
-import { CACHE_PREFIX, POPULATE_USER_SELECT_FIELDS } from '@/modules/audio/audio.constants';
+import { AUDIOS_LIST_CACHE_KEY } from '@/modules/audio/audio.constants';
 import { CacheService } from '@/modules/cache/cache.service';
 
 @Injectable()
@@ -23,38 +23,26 @@ export class AudioService {
 
         await this.cacheService.deleteAll();
 
-        return newAudio.toObject({ getters: true });
+        return newAudio.toObject();
     }
 
     async updateAudio(params: UpdateAudioParams): Promise<AudioModel> {
         await this.cacheService.deleteAll();
 
-        return this.audioRepository
-            .findOneAndUpdate(params.filter, params.update, { new: true })
-            .populate({ path: 'authoredBy', select: POPULATE_USER_SELECT_FIELDS })
-            .populate({ path: 'createdBy', select: POPULATE_USER_SELECT_FIELDS })
-            .populate({ path: 'deletedBy', select: POPULATE_USER_SELECT_FIELDS })
-            .lean({ virtuals: true });
+        return this.audioRepository.findOneAndUpdate(params.filter, params.update, { new: true }).lean();
     }
 
     async getAudiosList(params: GetAudiosListParams = {}): Promise<AudioModel[]> {
-        const cacheKey = [CACHE_PREFIX, 'audiosList', JSON.stringify(params)].join('');
-        const cachedValue = await this.cacheService.get<AudioModel[]>(cacheKey);
+        const cachedValue = await this.cacheService.get<AudioModel[]>(AUDIOS_LIST_CACHE_KEY);
 
         if (!cachedValue) {
-            const { filter, options } = params;
-
             const audiosList: AudioModel[] = await this.audioRepository
-                .find(filter || {})
-                .limit(params.options?.limit || 0)
-                .sort(options?.sort)
-                .select(options?.select || {})
-                .populate({ path: 'authoredBy', select: POPULATE_USER_SELECT_FIELDS })
-                .populate({ path: 'createdBy', select: POPULATE_USER_SELECT_FIELDS })
-                .populate({ path: 'deletedBy', select: POPULATE_USER_SELECT_FIELDS })
-                .lean({ virtuals: true });
+                .find(params.filter || {})
+                .limit(params.limit || 0)
+                .select(params.select || {})
+                .lean();
 
-            await this.cacheService.set(cacheKey, audiosList);
+            await this.cacheService.set(AUDIOS_LIST_CACHE_KEY, audiosList);
 
             return audiosList;
         }
@@ -62,21 +50,20 @@ export class AudioService {
         return cachedValue;
     }
 
-    async deleteAudio(filter: DeleteAudioFilter = {}, deletedBy: UserRef): Promise<AudioModel> {
-        const updateValue = { deletedAt: Date.now(), deletedBy };
-
+    async deleteAudio(filter: DeleteAudioFilter = {}): Promise<AudioModel> {
         await this.cacheService.deleteAll();
 
-        return this.audioRepository
-            .findOneAndUpdate(filter, updateValue, { new: true })
-            .populate({ path: 'createdBy', select: POPULATE_USER_SELECT_FIELDS })
-            .populate({ path: 'deletedBy', select: POPULATE_USER_SELECT_FIELDS })
-            .lean({ virtuals: true });
+        return this.audioRepository.findOneAndUpdate(filter, { deletedAt: Date.now() }, { new: true }).lean();
+    }
+
+    async updateCaches() {
+        await this.cacheService.deleteAll();
+        await this.getAudiosList();
     }
 
     async cleanUpAudios() {
         const filter = { deletedAt: { $lte: getSubtractedDate(1, 'day') } };
 
-        return this.audioRepository.deleteMany(filter, { lean: { virtuals: true } });
+        return this.audioRepository.deleteMany(filter, { lean: true });
     }
 }
