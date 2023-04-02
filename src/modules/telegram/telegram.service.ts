@@ -115,7 +115,7 @@ export class TelegramService {
         }
     }
 
-    async onListCommand(ctx: Context) {
+    async onManageCommand(ctx: Context) {
         const rawAudiosList = await this.audioService.getAudiosList();
         const audiosList = orderBy(rawAudiosList, ['createdAt'], ['desc']);
 

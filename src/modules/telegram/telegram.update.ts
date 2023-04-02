@@ -60,11 +60,11 @@ export class TelegramUpdate {
     }
 
     @UseGuards(AdminGuard, PrivateChatGuard)
-    @Command('list')
-    async onListCommand(ctx: MessageContext) {
+    @Command('manage')
+    async onManageCommand(ctx: MessageContext) {
         await ctx.sendChatAction('typing');
 
-        return this.telegramService.onListCommand(ctx);
+        return this.telegramService.onManageCommand(ctx);
     }
 
     @Command('debug')

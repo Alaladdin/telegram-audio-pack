@@ -21,7 +21,7 @@ export type I18nTranslations = {
     };
     "commands": {
         "start": string;
-        "list": string;
+        "manage": string;
         "top": string;
         "help": string;
         "debug": string;

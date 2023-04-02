@@ -1,6 +1,6 @@
 {
   "start": "init bot",
-  "list": "audios list (admins only)",
+  "manage": "audios manage (admins only)",
   "top": "top audios",
   "help": "get help",
   "debug": "debug info"

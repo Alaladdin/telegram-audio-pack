@@ -10,7 +10,7 @@ export const ADMINS_IDS = [OWNER_ID, 648639475, 865100224, 292285878, 541357698]
 export const BOT_COMMANDS_LIST: (keyof PathValue<I18nTranslations, 'commands'>)[] = [
     'start',
     'top',
-    'list',
+    'manage',
     'help',
     'debug',
 ];
