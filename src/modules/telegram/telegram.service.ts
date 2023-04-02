@@ -163,6 +163,7 @@ export class TelegramService {
         let messageExtra = {};
 
         if (user) {
+            const userTag = user.username ? `@${user.username}` : EMPTY_VALUE;
             const authoredAudios = await this.audioService.getAudiosList({ filter: { authoredBy: user._id } });
             const createdAudios = await this.audioService.getAudiosList({ filter: { createdBy: user._id } });
             const authoredAudiosCount = authoredAudios.length;
@@ -176,7 +177,7 @@ export class TelegramService {
 
             const rawMessageList: UserData[] = [
                 { title: 'userId', value: user.userId },
-                { title: 'username', value: user.username },
+                { title: 'username', value: userTag },
                 { title: 'firstName', value: user.firstName },
                 { title: 'lastName', value: user.lastName },
                 { title: 'displayName', value: user.displayName },
