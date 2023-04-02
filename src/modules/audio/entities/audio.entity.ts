@@ -1,6 +1,5 @@
-import { modelOptions, plugin, prop, Ref } from '@typegoose/typegoose';
+import { modelOptions, plugin, prop } from '@typegoose/typegoose';
 import { getDefaultDatabaseSchemaOptions } from '@/config';
-import { UserEntity } from '@/modules/user/entities/user.entity';
 import { TelegramAudioEntity } from './telegram-audio.entity';
 import { BaseEntity } from '@entities';
 import { mongooseLeanVirtuals } from 'mongoose-lean-virtuals';
@@ -20,16 +19,7 @@ export class AudioEntity extends BaseEntity {
     content: Buffer;
 
     @prop({ type: () => TelegramAudioEntity, _id: false, required: true })
-    telegramMetadata: TelegramAudioEntity;
-
-    @prop({ ref: () => UserEntity, required: true })
-    authoredBy: Ref<UserEntity>;
-
-    @prop({ ref: () => UserEntity, required: true })
-    createdBy: Ref<UserEntity>;
-
-    @prop({ ref: () => UserEntity, default: null })
-    deletedBy?: Ref<UserEntity>;
+    voice: TelegramAudioEntity;
 
     @prop({ default: null })
     deletedAt?: Date;

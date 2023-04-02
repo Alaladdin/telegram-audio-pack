@@ -6,10 +6,7 @@ import { Nullable } from '@types';
 export class AudioModel extends BaseModel {
     name: string;
     content: Buffer;
-    telegramMetadata: TelegramAudioEntity;
-    authoredBy: UserEntity;
-    createdBy: UserEntity;
-    deletedBy?: Nullable<UserEntity>;
+    voice: TelegramAudioEntity;
     deletedAt?: Nullable<Date>;
     usedTimes: number;
 }
