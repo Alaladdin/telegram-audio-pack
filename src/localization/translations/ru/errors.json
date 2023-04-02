@@ -1,6 +1,5 @@
 {
   "base_error": "Ошибка: {message}",
   "not_admin": "вы не админ \uD83D\uDE21",
-  "cannot_delete_other_user": "вы не можете удалить другого пользователя",
   "command_for_private_chat_only": "команда только для личных сообщений"
 }

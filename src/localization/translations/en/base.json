@@ -2,6 +2,5 @@
   "yes": "Yes",
   "no": "No",
   "not_found": "Not found",
-  "creator": "Creator",
-  "deleter": "Deleter"
+  "deletedAt": "Deleted at: {date}"
 }

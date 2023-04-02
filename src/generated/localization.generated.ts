@@ -17,21 +17,18 @@ export type I18nTranslations = {
         "yes": string;
         "no": string;
         "not_found": string;
-        "creator": string;
-        "deleter": string;
+        "deletedAt": string;
     };
     "commands": {
         "start": string;
         "list": string;
         "top": string;
-        "my_data": string;
         "help": string;
         "debug": string;
     };
     "errors": {
         "base_error": string;
         "not_admin": string;
-        "cannot_delete_other_user": string;
         "command_for_private_chat_only": string;
     };
     "replies": {
