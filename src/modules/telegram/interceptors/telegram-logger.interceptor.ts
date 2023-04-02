@@ -25,6 +25,7 @@ export class TelegramLoggerInterceptor implements NestInterceptor {
                     { valueGetter: () => getDisplayName(ctx.from) },
                     { title: 'chatId', value: ctx.chat?.id },
                     { valueGetter: () => `@${ctx.from?.username}` },
+                    { valueGetter: () => (ctx.message && 'text' in ctx.message ? ctx.message.text : '') },
                     { title: 'inlineQuery', value: ctx.inlineQuery?.query },
                     {
                         title: 'callbackQuery',

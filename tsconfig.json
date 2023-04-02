@@ -21,6 +21,7 @@
       "@root/*": ["./*"],
       "@/*": ["src/*"],
       "@entities": ["src/shared/entities"],
+      "@interceptors": ["src/shared/interceptors"],
       "@models": ["src/shared/models"],
       "@types": ["src/shared/types"],
       "@utils": ["src/shared/utils"],

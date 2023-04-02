@@ -3,6 +3,7 @@ import * as moment from 'moment';
 import * as tmp from 'tmp-promise';
 import * as crypto from 'node:crypto';
 import { APP_NAME } from '@constants';
+import _ms, { StringValue } from 'ms';
 
 export const chain = _.chain;
 export const clone = _.cloneDeep;
@@ -29,3 +30,5 @@ export const getTempFile = async (): Promise<string> => {
 
     return tmp.file({ dir }).then((result) => result.path);
 };
+
+export const ms = (value: StringValue) => _ms(value);
