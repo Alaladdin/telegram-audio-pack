@@ -16,7 +16,9 @@ export class CacheService {
     async set(key: string, value: unknown, ttl?: Milliseconds) {
         this.logger.verbose(`[SET]: ${key}:${value}, ttl:${ttl}`);
 
-        await this.cacheManager.set(key, value, ttl);
+        if (value !== undefined) {
+            await this.cacheManager.set(key, value, ttl);
+        }
     }
 
     async delete(key: string) {

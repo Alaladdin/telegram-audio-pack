@@ -2,7 +2,6 @@ import { PathValue } from 'nestjs-i18n';
 import { I18nTranslations } from '@/generated/localization.generated';
 
 export const BOT_NAME = 'Audio Pack Bot';
-export const AUDIO_DEFAULT_NAME_PREFIX = 'audio_by_';
 export const TOP_AUDIOS_LIMIT = 5;
 export const INLINE_QUERY_LIMIT = 50;
 export const UNKNOWN_USER_NAME = 'INCOGNITO';

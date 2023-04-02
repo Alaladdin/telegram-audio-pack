@@ -3,7 +3,7 @@ import { CHARS_TO_MD_ESCAPE, UNKNOWN_USER_NAME } from '@/modules/telegram/telegr
 import { CreateAudioDto } from '@/modules/audio/dto';
 import { map } from '@utils';
 
-export const getMappedTelegramAudio = (audio: TelegramAudio): CreateAudioDto['telegramMetadata'] => ({
+export const getMappedAudio = (audio: TelegramAudio): CreateAudioDto['voice'] => ({
     fileId: audio.file_id,
     fileUniqueId: audio.file_unique_id,
     size: audio.file_size,

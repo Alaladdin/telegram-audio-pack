@@ -3,35 +3,24 @@ import { I18nService } from 'nestjs-i18n';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { I18nTranslations } from '@/generated/localization.generated';
-import { each, filter, map, some } from '@utils';
+import { chain, map, orderBy, formatDate } from '@utils';
 import { Markup, Telegraf } from 'telegraf';
 import {
     AudioContext,
     CallbackQueryContext,
     ChosenInlineResultContext,
     Context,
-    GetAudioData,
-    GetVoiceData,
     InlineQueryContext,
     MessageContext,
-    UserData,
 } from './interfaces';
-import {
-    ADMINS_IDS,
-    AUDIO_DEFAULT_NAME_PREFIX,
-    BOT_COMMANDS_LIST,
-    INLINE_QUERY_LIMIT,
-    TOP_AUDIOS_LIMIT,
-} from './telegram.constants';
+import { ADMINS_IDS, BOT_COMMANDS_LIST, INLINE_QUERY_LIMIT, TOP_AUDIOS_LIMIT } from './telegram.constants';
 import { FfmpegService } from '@/modules/ffmpeg/ffmpeg.service';
-import { formatDate } from '@utils';
-import { UserService } from '@/modules/user/user.service';
 import { EMPTY_VALUE } from '@constants';
 import { AudioService } from '@/modules/audio/audio.service';
 import { AudioModel } from '@/modules/audio/audio.model';
-import { getEscapedMessage, getMappedTelegramAudio, getMappedUser } from './utils';
+import { getDisplayName, getEscapedMessage, getMappedAudio } from './utils';
 import { ExtraEditMessageCaption } from 'telegraf/typings/telegram-types';
-import { TelegrafException } from 'nestjs-telegraf';
+import { InlineQueryResultCachedVoice } from 'typegram/inline';
 
 @Injectable()
 export class TelegramService {
@@ -42,7 +31,6 @@ export class TelegramService {
         private readonly i18n: I18nService<I18nTranslations>,
         private readonly httpService: HttpService,
         private readonly audioService: AudioService,
-        private readonly userService: UserService,
         private readonly ffmpegService: FfmpegService,
     ) {
         this.isProd = this.configService.get('NODE_ENV') === 'production';
@@ -62,19 +50,16 @@ export class TelegramService {
     }
 
     async onStartCommand(ctx: MessageContext) {
-        const user = await this.userService.createOrUpdateUser(getMappedUser(ctx.from));
-        const message = ctx.$t('replies.greeting', { args: { name: user.displayName } });
+        const displayName = getDisplayName(ctx.from);
+        const message = ctx.$t('replies.greeting', { args: { name: displayName } });
 
         await ctx.$replyWithMDCode(message);
     }
 
     async onHelpCommand(ctx: Context) {
         const message = [
-            '`- При некоторых действиях, создается/обновляется запись в базе о пользователе`',
-            '`- Данные можно проверить/удалить через команду` /my_data',
             '`- Бот использует язык, который у вас в телеграме`',
             `\`- Использование бота: введите\` \`@${ctx.me}\` \`в любом чате\``,
-            `\`- Поиск осуществляется по названию аудио, имени автора или создателя\``,
         ];
 
         if (ctx.isAdmin) {
@@ -82,7 +67,6 @@ export class TelegramService {
                 '\n*# Добавление новых аудиозаписей*',
                 '`- Можно отправить боту как файл, так и переслать уже готовый войс/аудиофайл из телеграма`',
                 '`- Чтобы установить название аудио, нужно при отправке указать его в сообщении`',
-                '`- Если переслать боту чужое аудио, то автором будете не вы, а этот пользователь (если его профиль не скрыт для пересылаемых сообщений)`',
                 '`! Переименование существующих аудиозаписей еще не реализовано`',
                 '`! Есть проблема с длинными mp3 файлами, они обрезаются по какой-то причине при сохранении`',
                 '`! Протестировано с .ogg/.mp3`',
@@ -91,14 +75,6 @@ export class TelegramService {
                 '`- Осуществляется управление через команду` /list',
                 '`- Удаляются не сразу, а по прошествии 24 часов. В это время восстановить файл`',
                 '`- Помеченные для удаления аудиозаписи сразу же убираются из выбора для отправки`',
-
-                '\n*# Нюансы*',
-                '`- Админы не могут удалить информацию о себе в базе из-за того, что нарушатся связи в базе (между пользователем и аудиозаписями, которые он создал)`',
-
-                '\n*# Терминология*',
-                '`- Автор: тот, кто записал аудио (создатель, если автора нет)`',
-                '`- Создатель: тот, кто добавил аудио в бота (сохранил)`',
-                '`- Удалятель: тот, кто удалил`',
             );
         }
 
@@ -106,18 +82,21 @@ export class TelegramService {
     }
 
     async onTopCommand(ctx: MessageContext) {
-        const audiosList = await this.audioService.getAudiosList({
-            filter: { deletedAt: null },
-            options: { limit: TOP_AUDIOS_LIMIT, sort: { usedTimes: 'desc' } },
-        });
+        const rawAudiosList = await this.audioService.getAudiosList();
+        const audiosList = chain(rawAudiosList)
+            .reject('deletedAt')
+            .orderBy(['usedTimes'], ['desc'])
+            .take(TOP_AUDIOS_LIMIT)
+            .value();
 
         if (audiosList.length) {
             await ctx.$sendMessageWithMD(ctx.$t('replies.top_audios', { args: { count: TOP_AUDIOS_LIMIT } }));
 
-            each(audiosList, (audio) => {
+            for await (const audio of audiosList) {
                 const message = ctx.$t('replies.used_times', { args: { count: audio.usedTimes } });
 
-                ctx.sendAudio(
+                await ctx.sendChatAction('upload_voice');
+                await ctx.sendAudio(
                     {
                         filename: audio.name,
                         source: audio.content,
@@ -125,30 +104,29 @@ export class TelegramService {
                     {
                         title: audio.name,
                         caption: `\`${message}\``,
-                        performer: audio.authoredBy.displayName,
-                        duration: audio.telegramMetadata.duration,
                         parse_mode: 'MarkdownV2',
+                        duration: audio.voice.duration,
                         disable_notification: true,
                     },
                 );
-            });
+            }
         } else {
             await ctx.$sendMessageWithMD('No audios');
         }
     }
 
     async onListCommand(ctx: Context) {
-        const audiosList = await this.audioService.getAudiosList({
-            options: { sort: { createdAt: 'desc' } },
-        });
+        const rawAudiosList = await this.audioService.getAudiosList();
+        const audiosList = orderBy(rawAudiosList, ['createdAt'], ['desc']);
 
         if (audiosList.length) {
             await ctx.$sendMessageWithMD(ctx.$t('replies.audios_list'));
 
-            each(audiosList, (audio) => {
-                const messageInfo = this.getMessageInfo(ctx, audio);
+            for await (const audio of audiosList) {
+                const messageInfo = this.getAudioForListInfo(ctx, audio);
 
-                ctx.sendAudio(
+                await ctx.sendChatAction('upload_document');
+                await ctx.sendAudio(
                     {
                         filename: audio.name,
                         source: audio.content,
@@ -157,54 +135,15 @@ export class TelegramService {
                         title: audio.name,
                         caption: messageInfo.message,
                         reply_markup: { inline_keyboard: messageInfo.inlineKeyboard },
-                        performer: audio.authoredBy.displayName,
-                        duration: audio.telegramMetadata.duration,
+                        duration: audio.voice.duration,
                         parse_mode: 'MarkdownV2',
                         disable_notification: true,
                     },
                 );
-            });
+            }
         } else {
             await ctx.$sendMessageWithMD('No audios');
         }
-    }
-
-    async onMyDataCommand(ctx: MessageContext) {
-        const user = await this.userService.getUser(ctx.from.id);
-        let message = ctx.$t('base.not_found');
-        let messageExtra = {};
-
-        if (user) {
-            const userTag = user.username ? `@${user.username}` : EMPTY_VALUE;
-            const authoredAudios = await this.audioService.getAudiosList({ filter: { authoredBy: user._id } });
-            const createdAudios = await this.audioService.getAudiosList({ filter: { createdBy: user._id } });
-            const authoredAudiosCount = authoredAudios.length;
-            const createdAudiosCount = createdAudios.length;
-
-            if (!ctx.isAdmin && !authoredAudiosCount && !createdAudiosCount) {
-                messageExtra = Markup.inlineKeyboard([
-                    [Markup.button.callback(ctx.$t('actions.delete'), 'DELETE_MY_DATA')],
-                ]);
-            }
-
-            const rawMessageList: UserData[] = [
-                { title: 'userId', value: user.userId },
-                { title: 'username', value: userTag },
-                { title: 'firstName', value: user.firstName },
-                { title: 'lastName', value: user.lastName },
-                { title: 'displayName', value: user.displayName },
-                { title: 'lang', value: user.lang },
-                { title: 'authoredAudios', value: authoredAudiosCount },
-                { title: 'createdAudios', value: createdAudiosCount },
-                { title: 'updatedAt', value: formatDate(user.updatedAt) },
-                { title: 'createdAt', value: formatDate(user.createdAt) },
-                { title: 'isBot', value: user.isBot },
-            ];
-
-            message = map(rawMessageList, (message) => `${message.title}: ${message.value ?? EMPTY_VALUE}`).join('\n');
-        }
-
-        await ctx.$replyWithMDCode(message, messageExtra);
     }
 
     async onDebugCommand(ctx: MessageContext) {
@@ -222,7 +161,7 @@ export class TelegramService {
 
             '\n*# chat*',
             `\`id: ${chat.id}\``,
-            `\`title: ${'title' in chat ? chat.title : EMPTY_VALUE}\``,
+            `\`title: ${'title' in chat ? chat.title : chat.first_name}\``,
             `\`type: ${chat.type}\``,
 
             '\n*# user*',
@@ -230,17 +169,16 @@ export class TelegramService {
             `\`username: ${userTag}\``,
             `\`fullName: ${fullName}\``,
             `\`lang: ${from?.language_code || EMPTY_VALUE}\``,
-            `\`isAdmin: ${ADMINS_IDS.includes(from.id)}\``,
+            `\`isAdmin: ${ctx.isAdmin}\``,
         ];
 
         await ctx.$replyWithMD(message.join('\n'));
     }
 
     async onAudioMessage(ctx: AudioContext) {
-        const isPrivateChat = ctx.chat.type === 'private';
         const isFromCurrentBot = ctx.botInfo.id === ctx.message.via_bot?.id;
 
-        if (isPrivateChat && !isFromCurrentBot) {
+        if (!isFromCurrentBot) {
             const message = ctx.$t('actions.save') + '?';
             const inlineKeyboard = Markup.inlineKeyboard([
                 [
@@ -257,96 +195,49 @@ export class TelegramService {
         const queryKey = ctx.callbackQuery.data;
         const [key, payload] = queryKey.split(':');
 
-        if (key === 'DELETE_MY_DATA') {
-            await this.onDeleteUser(ctx);
+        if (key === 'SAVE_AUDIO') {
+            await this.onSaveAudio(ctx);
         }
 
-        if (ctx.isAdmin) {
-            if (key === 'SAVE_AUDIO') {
-                await this.onSaveAudio(ctx);
-            }
-
-            if (key === 'DISCARD_AUDIO') {
-                await this.onDiscardAudio(ctx);
-            }
-
-            if (key === 'DELETE_AUDIO') {
-                await this.onDeleteAudio(ctx, payload);
-            }
-
-            if (key === 'RESTORE_AUDIO') {
-                await this.onRestoreAudio(ctx, payload);
-            }
+        if (key === 'DISCARD_AUDIO') {
+            await this.onDiscardAudio(ctx);
         }
-    }
 
-    private async onDeleteUser(ctx: CallbackQueryContext) {
-        const messageAuthor = ctx.callbackQuery.message.reply_to_message.from;
-        const actionAuthor = ctx.from;
+        if (key === 'DELETE_AUDIO') {
+            await this.onDeleteAudio(ctx, payload);
+        }
 
-        if (messageAuthor?.id === actionAuthor.id) {
-            const isDeleted = await this.userService.deleteUser(ctx.from.id);
-            const message = isDeleted ? ctx.$t('actions.deleted') : ctx.$t('base.not_found');
-
-            await ctx.editMessageText(`\`${message}\``, { parse_mode: 'MarkdownV2' });
-        } else {
-            throw new TelegrafException(ctx.$t('errors.cannot_delete_other_user'));
+        if (key === 'RESTORE_AUDIO') {
+            await this.onRestoreAudio(ctx, payload);
         }
     }
 
     private async onSaveAudio(ctx: CallbackQueryContext) {
         const query = ctx.callbackQuery;
         const replyMessage = query.message.reply_to_message;
-        const author = replyMessage.forward_from || replyMessage.from || ctx.botInfo;
         const audio = replyMessage.voice || replyMessage.audio;
-        const audioURL = await ctx.telegram.getFileLink(audio.file_id);
-        const authoredBy = await this.userService.createOrUpdateUser(getMappedUser(author));
-        const createdBy = await this.userService.createOrUpdateUser(getMappedUser(query.from));
-
-        const audioData = replyMessage.voice
-            ? this.getVoiceData({ author: authoredBy })
-            : this.getAudioData({ audio: replyMessage.audio, author: authoredBy });
-
+        const audioUrl = await ctx.telegram.getFileLink(audio.file_id);
+        const audioTitle = replyMessage.caption || `${Date.now()}`;
         const fileBuffer = await this.ffmpegService.getCleanAudio({
-            url: audioURL.href,
-            title: replyMessage.caption || audioData.title,
+            url: audioUrl.href,
+            title: audioTitle,
         });
 
-        const { voice: newVoice } = await ctx.replyWithVoice(
+        const replyVoice = await ctx.replyWithVoice(
             { source: fileBuffer },
             {
                 parse_mode: 'MarkdownV2',
-                caption: getEscapedMessage(`\`${replyMessage.caption || audioData.title}\``),
+                caption: getEscapedMessage(`\`${audioTitle}\``),
             },
         );
 
         await this.audioService.createAudio({
-            name: replyMessage.caption || audioData.title,
+            name: audioTitle,
             content: fileBuffer,
-            telegramMetadata: getMappedTelegramAudio(newVoice),
-            authoredBy,
-            createdBy,
+            voice: getMappedAudio(replyVoice.voice),
         });
 
         await ctx.editMessageText(`\`${ctx.$t('actions.saved')}\``, { parse_mode: 'MarkdownV2' });
-    }
-
-    private getAudioData(data: GetAudioData) {
-        const { audio, author } = data;
-        const title = audio.title || `${AUDIO_DEFAULT_NAME_PREFIX}${author.username || author.userId}`;
-
-        return {
-            title: title.replace(' ', '_'),
-        };
-    }
-
-    private getVoiceData(data: GetVoiceData) {
-        const { author } = data;
-        const title = `${AUDIO_DEFAULT_NAME_PREFIX}${author.username || author.userId}`;
-
-        return {
-            title: title.replace(' ', '_'),
-        };
     }
 
     private async onDiscardAudio(ctx: CallbackQueryContext) {
@@ -356,13 +247,12 @@ export class TelegramService {
     }
 
     private async onDeleteAudio(ctx: CallbackQueryContext, audioId: string) {
-        const user = await this.userService.createOrUpdateUser(getMappedUser(ctx.from));
-        const deletedAudio = await this.audioService.deleteAudio({ _id: audioId }, user);
+        const deletedAudio = await this.audioService.deleteAudio({ _id: audioId });
         let message = ctx.$t('base.not_found');
         const messageExtra: ExtraEditMessageCaption = { parse_mode: 'MarkdownV2' };
 
         if (deletedAudio) {
-            const messageInfo = this.getMessageInfo(ctx, deletedAudio);
+            const messageInfo = this.getAudioForListInfo(ctx, deletedAudio);
 
             message = messageInfo.message;
             messageExtra.reply_markup = { inline_keyboard: messageInfo.inlineKeyboard };
@@ -374,13 +264,13 @@ export class TelegramService {
     private async onRestoreAudio(ctx: CallbackQueryContext, audioId: string) {
         const updatedAudio = await this.audioService.updateAudio({
             filter: { _id: audioId },
-            update: { deletedAt: null, deletedBy: null },
+            update: { deletedAt: null },
         });
         let message = ctx.$t('base.not_found');
         const messageExtra: ExtraEditMessageCaption = { parse_mode: 'MarkdownV2' };
 
         if (updatedAudio) {
-            const messageInfo = this.getMessageInfo(ctx, updatedAudio);
+            const messageInfo = this.getAudioForListInfo(ctx, updatedAudio);
 
             message = messageInfo.message;
             messageExtra.reply_markup = { inline_keyboard: messageInfo.inlineKeyboard };
@@ -389,22 +279,18 @@ export class TelegramService {
         await ctx.editMessageCaption(message, messageExtra);
     }
 
-    private getMessageInfo(ctx: Context, audio: AudioModel) {
+    private getAudioForListInfo(ctx: Context, audio: AudioModel) {
         const inlineKeyboard: ReturnType<typeof Markup.button.callback>[] = [];
         const usedTimesText = ctx.$t('replies.used_times', { args: { count: audio.usedTimes } });
-        const messageList = [
-            [usedTimesText],
-            [ctx.$t('base.creator'), audio.createdBy.displayName],
-            [ctx.$t('base.deleter'), audio.deletedBy?.displayName || EMPTY_VALUE],
-        ];
+        const deletedAtDate = audio.deletedAt ? formatDate(audio.deletedAt) : EMPTY_VALUE;
+        const deletedAtText = ctx.$t('base.deletedAt', { args: { date: deletedAtDate } });
+        const message = map([usedTimesText, deletedAtText], (message) => `\`${message}\``).join('\n');
 
         if (audio.deletedAt) {
             inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.restore'), `RESTORE_AUDIO:${audio.id}`));
         } else {
             inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.delete'), `DELETE_AUDIO:${audio.id}`));
         }
-
-        const message = map(messageList, (message) => `\`${message.join(': ')}\``).join('\n');
 
         return {
             message: getEscapedMessage(message),
@@ -414,54 +300,33 @@ export class TelegramService {
 
     async onInlineQuery(ctx: InlineQueryContext) {
         const searchText = ctx.inlineQuery.query;
-        const searchRegex = new RegExp(searchText, 'i');
-        const rawAudios = await this.audioService.getAudiosList({
-            filter: { deletedAt: null },
-            options: {
-                sort: { usedTimes: 'desc' },
-                limit: INLINE_QUERY_LIMIT,
-                select: {
-                    name: 1,
-                    telegramMetadata: 1,
-                    authoredBy: 1,
-                    createdBy: 1,
-                },
-            },
-        });
+        const rawAudios = await this.audioService.getAudiosList();
 
-        const audios = filter(rawAudios, (audio) => {
-            const { name, authoredBy, createdBy } = audio;
-            const arrayToSearch = [
-                name,
-                authoredBy.displayName,
-                authoredBy.username,
-                createdBy.displayName,
-                createdBy.username,
-            ];
+        const audios = chain(rawAudios)
+            .reject((audio) => {
+                const audioSearchName = audio.name.toLowerCase();
 
-            return some(arrayToSearch, (search) => search && searchRegex.test(search));
-        });
-
-        await ctx.answerInlineQuery(
-            map(audios, (audio) => ({
+                return !!audio.deletedAt || !audioSearchName.includes(searchText);
+            })
+            .orderBy(['usedTimes'], ['desc'])
+            .take(INLINE_QUERY_LIMIT)
+            .map<InlineQueryResultCachedVoice>((audio) => ({
                 type: 'voice',
-                id: audio.telegramMetadata.fileUniqueId,
+                id: audio.voice.fileUniqueId,
                 title: audio.name,
-                voice_file_id: audio.telegramMetadata.fileId,
-                voice_duration: audio.telegramMetadata.duration,
-            })),
-            {
-                cache_time: this.isProd ? 300 : 0,
-            },
-        );
+                voice_file_id: audio.voice.fileId,
+                voice_duration: audio.voice.duration,
+            }))
+            .value();
+
+        await ctx.answerInlineQuery(audios, { cache_time: this.isProd ? 300 : 0 });
     }
 
     async onInlineQueryResultChosen(ctx: ChosenInlineResultContext) {
-        const { from: user, result_id: fileUniqueId } = ctx.chosenInlineResult;
+        const { result_id: fileUniqueId } = ctx.chosenInlineResult;
 
-        await this.userService.createOrUpdateUser(getMappedUser(user));
         await this.audioService.updateAudio({
-            filter: { 'telegramMetadata.fileUniqueId': fileUniqueId },
+            filter: { 'voice.fileUniqueId': fileUniqueId },
             update: { $inc: { usedTimes: 1 } },
         });
     }
