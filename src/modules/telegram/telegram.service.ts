@@ -247,7 +247,10 @@ export class TelegramService {
     }
 
     private async onDeleteAudio(ctx: CallbackQueryContext, audioId: string) {
-        const deletedAudio = await this.audioService.deleteAudio({ _id: audioId });
+        const deletedAudio = await this.audioService.updateAudio({
+            filter: { _id: audioId },
+            update: { deletedAt: Date.now() },
+        });
         let message = ctx.$t('base.not_found');
         const messageExtra: ExtraEditMessageCaption = { parse_mode: 'MarkdownV2' };
 
