@@ -26,4 +26,6 @@ WORKDIR /usr/src/app
 
 COPY --from=production-builder /usr/src/app/ ./
 
+ENV TZ Europe/Moscow
+
 CMD [ "npm", "run", "start:prod" ]
