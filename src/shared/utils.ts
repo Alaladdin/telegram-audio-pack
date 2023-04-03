@@ -17,6 +17,13 @@ export const keys = _.keys;
 export const sortBy = _.sortBy;
 export const orderBy = _.orderBy;
 export const flatten = _.flatten;
+export const sleep = (sec: number): Promise<void> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve();
+        }, sec * 1000);
+    });
+};
 
 export const formatDate = (date: moment.MomentInput, format = 'HH:mm DD.MM.YYYY') => moment(date).format(format);
 export const getSubtractedDate = (amount: moment.DurationInputArg1, unit: moment.unitOfTime.DurationConstructor) =>

@@ -3,7 +3,7 @@ import { I18nService } from 'nestjs-i18n';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { I18nTranslations } from '@/generated/localization.generated';
-import { chain, map, orderBy, formatDate } from '@utils';
+import { chain, map, orderBy, formatDate, sleep } from '@utils';
 import { Markup, Telegraf } from 'telegraf';
 import {
     AudioContext,
@@ -143,6 +143,8 @@ export class TelegramService {
                         disable_notification: true,
                     },
                 );
+
+                await sleep(0.3);
             }
         } else {
             await ctx.$sendMessageWithMD('No audios');
