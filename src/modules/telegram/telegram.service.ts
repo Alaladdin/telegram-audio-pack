@@ -287,9 +287,10 @@ export class TelegramService {
         const message = map([usedTimesText, deletedAtText], (message) => `\`${message}\``).join('\n');
 
         if (audio.deletedAt) {
-            inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.restore'), `RESTORE_AUDIO:${audio.id}`));
+            inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.restore'), `RESTORE_AUDIO:${audio._id}`));
         } else {
-            inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.delete'), `DELETE_AUDIO:${audio.id}`));
+            inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.rename'), `RENAME_AUDIO:${audio._id}`));
+            inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.delete'), `DELETE_AUDIO:${audio._id}`));
         }
 
         return {
