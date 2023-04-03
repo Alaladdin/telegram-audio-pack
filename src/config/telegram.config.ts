@@ -5,6 +5,7 @@ import { BOT_NAME } from '@/modules/telegram/telegram.constants';
 import { I18nService } from 'nestjs-i18n';
 import { I18nTranslations } from '@/generated/localization.generated';
 import { baseMiddleware, i18nMiddleware } from '@/modules/telegram/middlewares';
+import { session } from 'telegraf';
 
 export const getTelegramConfig = (
     configService: ConfigService,
@@ -12,5 +13,5 @@ export const getTelegramConfig = (
 ): TelegrafModuleOptions => ({
     botName: BOT_NAME,
     token: configService.get('BOT_TOKEN') || '',
-    middlewares: [useNewReplies(), i18nMiddleware(i18n), baseMiddleware],
+    middlewares: [useNewReplies(), i18nMiddleware(i18n), session(), baseMiddleware],
 });

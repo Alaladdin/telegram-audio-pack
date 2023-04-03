@@ -12,8 +12,15 @@ import {
     Context,
     InlineQueryContext,
     MessageContext,
+    SceneContext,
 } from './interfaces';
-import { ADMINS_IDS, BOT_COMMANDS_LIST, INLINE_QUERY_LIMIT, TOP_AUDIOS_LIMIT } from './telegram.constants';
+import {
+    ADMINS_IDS,
+    BOT_COMMANDS_LIST,
+    INLINE_QUERY_LIMIT,
+    RENAME_AUDIO_SCENE_ID,
+    TOP_AUDIOS_LIMIT,
+} from './telegram.constants';
 import { FfmpegService } from '@/modules/ffmpeg/ffmpeg.service';
 import { EMPTY_VALUE } from '@constants';
 import { AudioService } from '@/modules/audio/audio.service';
@@ -57,24 +64,20 @@ export class TelegramService {
     }
 
     async onHelpCommand(ctx: Context) {
-        const message = [
-            '`- Бот использует язык, который у вас в телеграме`',
-            `\`- Использование бота: введите\` \`@${ctx.me}\` \`в любом чате\``,
-        ];
+        const message = [`\`- Использование бота: введите\` \`@${ctx.me}\` \`в любом чате\``];
 
         if (ctx.isAdmin) {
             message.push(
                 '\n*# Добавление новых аудиозаписей*',
                 '`- Можно отправить боту как файл, так и переслать уже готовый войс/аудиофайл из телеграма`',
-                '`- Чтобы установить название аудио, нужно при отправке указать его в сообщении`',
-                '`! Переименование существующих аудиозаписей еще не реализовано`',
+                '`- Чтобы установить название аудио, нужно при отправке, указать его в сообщении`',
                 '`! Есть проблема с длинными mp3 файлами, они обрезаются по какой-то причине при сохранении`',
                 '`! Протестировано с .ogg/.mp3`',
 
                 '\n*# Удаление/восстановление аудиозаписей*',
-                '`- Осуществляется управление через команду` /list',
-                '`- Удаляются не сразу, а по прошествии 24 часов. В это время восстановить файл`',
-                '`- Помеченные для удаления аудиозаписи сразу же убираются из выбора для отправки`',
+                '`- Управление через команду /manage`',
+                '`- Удаляются не сразу, а по прошествии 24 часов. В это время можно восстановить файл`',
+                '`- Помеченные для удаления аудиозаписи нельзя использовать для отправки`',
             );
         }
 
@@ -207,6 +210,11 @@ export class TelegramService {
             await this.onDeleteAudio(ctx, payload);
         }
 
+        if (key === 'RENAME_AUDIO') {
+            // @ts-ignore
+            await this.onRenameAudio(ctx, payload);
+        }
+
         if (key === 'RESTORE_AUDIO') {
             await this.onRestoreAudio(ctx, payload);
         }
@@ -262,6 +270,10 @@ export class TelegramService {
         }
 
         await ctx.editMessageCaption(message, messageExtra);
+    }
+
+    private async onRenameAudio(ctx: SceneContext, audioId: string) {
+        await ctx.scene.enter(RENAME_AUDIO_SCENE_ID, { audioId });
     }
 
     private async onRestoreAudio(ctx: CallbackQueryContext, audioId: string) {

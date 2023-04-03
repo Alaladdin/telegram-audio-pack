@@ -1,4 +1,4 @@
-import { Context as tgContext } from 'telegraf';
+import { Context as tgContext, Scenes } from 'telegraf';
 import { TranslateOptions } from 'nestjs-i18n/dist/services/i18n.service';
 import { CallbackQuery, Update, Message, User } from 'typegram';
 import { ExtraReplyMessage } from 'telegraf/src/telegram-types';
@@ -32,3 +32,4 @@ export interface AudioContext extends tgContext<Update.MessageUpdate<Message.Aud
 export interface MessageContext extends tgContext<Update.MessageUpdate>, BaseContext {}
 export interface InlineQueryContext extends tgContext<Update.InlineQueryUpdate>, BaseContext {}
 export interface ChosenInlineResultContext extends tgContext<Update.ChosenInlineResultUpdate>, BaseContext {}
+export interface SceneContext extends Scenes.SceneContext, BaseContext {}

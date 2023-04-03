@@ -10,6 +10,9 @@ export type I18nTranslations = {
         "delete": string;
         "deleted": string;
         "rename": string;
+        "renaming_audio": string;
+        "renamed_audio": string;
+        "rename_audio_placeholder": string;
         "discard": string;
         "discarded": string;
     };

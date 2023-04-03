@@ -1,6 +1,8 @@
 import { PathValue } from 'nestjs-i18n';
 import { I18nTranslations } from '@/generated/localization.generated';
 
+export const RENAME_AUDIO_SCENE_ID = 'RENAME_AUDIO_SCENE';
+export const RENAME_AUDIO_SCENE_LEAVE_CODE = 'DISCARD';
 export const BOT_NAME = 'Audio Pack Bot';
 export const TOP_AUDIOS_LIMIT = 5;
 export const INLINE_QUERY_LIMIT = 50;

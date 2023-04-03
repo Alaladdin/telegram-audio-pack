@@ -8,6 +8,7 @@ import { GetAudioParams, GetAudiosListParams, UpdateAudioParams } from '@/module
 import { CreateAudioDto } from '@/modules/audio/dto';
 import { AUDIOS_LIST_CACHE_KEY, CACHE_PREFIX, NO_CLEAR_CACHE_ON_UPDATE_KEYS } from '@/modules/audio/audio.constants';
 import { CacheService } from '@/modules/cache/cache.service';
+import { Nullable } from '@types';
 
 @Injectable()
 export class AudioService {
@@ -38,7 +39,7 @@ export class AudioService {
         return this.audioRepository.findOneAndUpdate(params.filter, params.update, { new: true }).lean();
     }
 
-    async getAudio(params: GetAudioParams = {}): Promise<AudioModel> {
+    async getAudio(params: GetAudioParams = {}): Promise<Nullable<AudioModel>> {
         const cacheKey = [CACHE_PREFIX, JSON.stringify(params)].join('');
         const cachedValue = await this.cacheService.get<AudioModel>(cacheKey);
 

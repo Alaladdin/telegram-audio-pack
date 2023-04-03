@@ -9,6 +9,7 @@ import { I18nService } from 'nestjs-i18n';
 import { HttpModule } from '@nestjs/axios';
 import { FfmpegModule } from '@/modules/ffmpeg/ffmpeg.module';
 import { AudioModule } from '@/modules/audio/audio.module';
+import { RenameAudioScene } from '@/modules/telegram/scenes';
 
 @Module({
     imports: [
@@ -23,6 +24,6 @@ import { AudioModule } from '@/modules/audio/audio.module';
         AudioModule,
         FfmpegModule,
     ],
-    providers: [TelegramUpdate, TelegramService],
+    providers: [TelegramUpdate, TelegramService, RenameAudioScene],
 })
 export class TelegramModule {}

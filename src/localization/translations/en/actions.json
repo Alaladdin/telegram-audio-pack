@@ -9,6 +9,10 @@
   "deleted": "Deleted",
 
   "rename": "Rename",
+  "renaming_audio": "Renaming audio \"{name}\"",
+  "renamed_audio": "Audio \"{oldName}\" renamed to \"{newName}\"",
+  "rename_audio_placeholder": "Enter new audio name for \"{name}\"",
+
   "discard": "Discard",
   "discarded": "Discarded"
 }
