@@ -15,8 +15,7 @@ FROM node:16-slim
 
 WORKDIR /usr/src/app
 
-COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/package.json ./
+COPY --from=builder /usr/src/app/ ./
 
 ENV TZ Europe/Moscow
 
