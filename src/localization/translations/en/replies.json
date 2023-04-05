@@ -4,5 +4,6 @@
   "audios_count": "Audios count: {count}",
   "top_audios": "Top {count} audios",
   "used_times": "Used times: {count}",
+  "page_num": "Page [{current}/{total}]",
   "data_may_be_not_actual": "Data may be not actual version - using cache"
 }

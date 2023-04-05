@@ -14,5 +14,7 @@
   "rename_audio_placeholder": "Enter new audio name for \"{name}\"",
 
   "discard": "Discard",
-  "discarded": "Discarded"
+  "discarded": "Discarded",
+
+  "load_more": "Load more"
 }

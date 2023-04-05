@@ -16,7 +16,7 @@ interface BaseContext {
 
 interface CallbackQueryWithData<T extends Message.CommonMessage> extends Omit<CallbackQuery.DataQuery, 'message'> {
     message: Omit<Message.CommonMessage, 'reply_to_message'> & { from: User; reply_to_message: T };
-    data: 'SAVE_AUDIO' | 'DISCARD_AUDIO' | 'RESTORE_AUDIO' | 'RENAME_AUDIO' | 'DELETE_AUDIO';
+    data: 'SAVE_AUDIO' | 'DISCARD_AUDIO' | 'RESTORE_AUDIO' | 'RENAME_AUDIO' | 'DELETE_AUDIO' | 'LOAD_MORE_AUDIOS';
 }
 
 export type CallbackQueryUpdateType =

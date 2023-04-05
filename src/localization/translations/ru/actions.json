@@ -14,5 +14,7 @@
   "rename_audio_placeholder": "Введите новое имя для аудио \"{name}\"",
 
   "discard": "Отменить",
-  "discarded": "Отменено"
+  "discarded": "Отменено",
+
+  "load_more": "Загрузить еще"
 }

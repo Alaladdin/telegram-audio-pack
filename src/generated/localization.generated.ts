@@ -15,6 +15,7 @@ export type I18nTranslations = {
         "rename_audio_placeholder": string;
         "discard": string;
         "discarded": string;
+        "load_more": string;
     };
     "base": {
         "yes": string;
@@ -42,6 +43,7 @@ export type I18nTranslations = {
         "audios_count": string;
         "top_audios": string;
         "used_times": string;
+        "page_num": string;
         "data_may_be_not_actual": string;
     };
 };

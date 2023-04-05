@@ -3,7 +3,7 @@ import { I18nService } from 'nestjs-i18n';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { I18nTranslations } from '@/generated/localization.generated';
-import { chain, map, orderBy, formatDate, sleep, getZip, each, reduce } from '@utils';
+import { chain, map, formatDate, getZip, each, reduce } from '@utils';
 import { Markup, Telegraf } from 'telegraf';
 import {
     AudioContext,
@@ -20,6 +20,7 @@ import {
     BOT_COMMANDS_LIST,
     DATABASE_FILE_NAME,
     INLINE_QUERY_LIMIT,
+    MANAGE_AUDIOS_LIMIT,
     RENAME_AUDIO_SCENE_ID,
     TOP_AUDIOS_LIMIT,
 } from './telegram.constants';
@@ -120,12 +121,21 @@ export class TelegramService {
     }
 
     async onManageCommand(ctx: MessageContext) {
+        await ctx.$sendMessageWithMD(ctx.$t('replies.audios_list'));
+        await this.handleManage(ctx, 0);
+    }
+
+    private async handleManage(ctx: Context, offset: number) {
         const rawAudiosList = await this.audioService.getAudiosList();
-        const audiosList = orderBy(rawAudiosList, ['createdAt'], ['desc']);
+        const totalPages = Math.ceil(rawAudiosList.length / MANAGE_AUDIOS_LIMIT);
+        const currentPage = offset + 1;
+        const startIndex = offset * MANAGE_AUDIOS_LIMIT;
+        const audiosList = chain(rawAudiosList)
+            .orderBy(['createdAt'], ['desc'])
+            .slice(startIndex, startIndex + MANAGE_AUDIOS_LIMIT)
+            .value();
 
         if (audiosList.length) {
-            await ctx.$sendMessageWithMD(ctx.$t('replies.audios_list'));
-
             for await (const audio of audiosList) {
                 const messageInfo = this.getAudioForListInfo(ctx, audio);
 
@@ -144,8 +154,21 @@ export class TelegramService {
                         disable_notification: true,
                     },
                 );
+            }
 
-                await sleep(1);
+            if (currentPage !== totalPages) {
+                const message = ctx.$t('replies.page_num', {
+                    args: { current: currentPage, total: totalPages },
+                });
+
+                await ctx.sendMessage(`\`${message}\``, {
+                    parse_mode: 'MarkdownV2',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [Markup.button.callback(ctx.$t('actions.load_more'), `LOAD_MORE_AUDIOS:${offset + 1}`)],
+                        ],
+                    },
+                });
             }
         } else {
             await ctx.$sendMessageWithMD('No audios');
@@ -259,6 +282,10 @@ export class TelegramService {
 
         if (key === 'RESTORE_AUDIO') {
             await this.onRestoreAudio(ctx, payload);
+        }
+
+        if (key === 'LOAD_MORE_AUDIOS') {
+            await this.handleManage(ctx, +payload);
         }
     }
 
