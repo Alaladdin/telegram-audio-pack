@@ -78,6 +78,13 @@ export class TelegramUpdate {
         return this.telegramService.onGetBackupCommand(ctx);
     }
 
+    @Command('stats')
+    async onStats(ctx: MessageContext) {
+        await ctx.sendChatAction('typing');
+
+        return this.telegramService.onStatsCommand(ctx);
+    }
+
     @Command('debug')
     async onDebug(ctx: MessageContext) {
         await ctx.sendChatAction('typing');

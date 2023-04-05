@@ -2,6 +2,7 @@
   "start": "init bot",
   "manage": "manage audios (admins only)",
   "get_backup": "download all audios with archive (admins only)",
+  "stats": "stats",
   "top": "top audios",
   "help": "get help",
   "debug": "debug info"

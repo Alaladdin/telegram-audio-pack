@@ -3,7 +3,7 @@ import { I18nService } from 'nestjs-i18n';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { I18nTranslations } from '@/generated/localization.generated';
-import { chain, map, orderBy, formatDate, sleep, getZip, each } from '@utils';
+import { chain, map, orderBy, formatDate, sleep, getZip, each, reduce } from '@utils';
 import { Markup, Telegraf } from 'telegraf';
 import {
     AudioContext,
@@ -178,6 +178,17 @@ export class TelegramService {
         } else {
             await ctx.$replyWithMDCode(ctx.$t('base.not_found'));
         }
+    }
+
+    async onStatsCommand(ctx: MessageContext) {
+        const audiosList = await this.audioService.getAudiosList();
+        const usedTimes = reduce(audiosList, (sum, audio) => sum + audio.usedTimes, 0);
+        const message = [
+            `${ctx.$t('replies.audios_count', { args: { count: audiosList.length } })}`,
+            `${ctx.$t('replies.used_times', { args: { count: usedTimes } })}`,
+        ];
+
+        await ctx.$replyWithMDCode(message.join('\n'));
     }
 
     async onDebugCommand(ctx: MessageContext) {

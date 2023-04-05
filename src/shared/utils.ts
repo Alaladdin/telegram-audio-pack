@@ -18,6 +18,7 @@ export const keys = _.keys;
 export const sortBy = _.sortBy;
 export const orderBy = _.orderBy;
 export const flatten = _.flatten;
+export const reduce = _.reduce;
 export const sleep = (sec: number): Promise<void> => {
     return new Promise((resolve) => {
         setTimeout(() => {
