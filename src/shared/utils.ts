@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import * as moment from 'moment';
 import * as tmp from 'tmp-promise';
 import * as crypto from 'node:crypto';
+import * as Zip from 'adm-zip';
 import { APP_NAME } from '@constants';
 import _ms, { StringValue } from 'ms';
 
@@ -41,3 +42,5 @@ export const getTempFile = async (): Promise<string> => {
 };
 
 export const ms = (value: StringValue) => _ms(value);
+
+export const getZip = () => new Zip();

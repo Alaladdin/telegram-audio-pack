@@ -25,6 +25,7 @@ export type I18nTranslations = {
     "commands": {
         "start": string;
         "manage": string;
+        "get_backup": string;
         "top": string;
         "help": string;
         "debug": string;
@@ -39,6 +40,7 @@ export type I18nTranslations = {
         "audios_list": string;
         "top_audios": string;
         "used_times": string;
+        "data_may_be_not_actual": string;
     };
 };
 export type I18nPath = Path<I18nTranslations>;

@@ -16,6 +16,7 @@ import { TelegramService } from '@/modules/telegram/telegram.service';
 import { I18nTranslations } from '@/generated/localization.generated';
 import { TelegrafExceptionFilter } from '@/modules/telegram/filters';
 import { BOT_NAME } from './telegram.constants';
+import { AudioService } from '@/modules/audio/audio.service';
 
 @Update()
 @UseInterceptors(TelegramLoggerInterceptor)
@@ -26,8 +27,10 @@ export class TelegramUpdate {
     constructor(
         @InjectBot(BOT_NAME) private readonly bot: Telegraf<Context>,
         private readonly i18n: I18nService<I18nTranslations>,
+        private readonly audioService: AudioService,
         private readonly telegramService: TelegramService,
     ) {
+        this.audioService.updateCaches();
         this.telegramService
             .setBotCommands(this.bot)
             .then(() => {
@@ -65,6 +68,14 @@ export class TelegramUpdate {
         await ctx.sendChatAction('typing');
 
         return this.telegramService.onManageCommand(ctx);
+    }
+
+    @UseGuards(AdminGuard, PrivateChatGuard)
+    @Command('get_backup')
+    async onGetBackup(ctx: MessageContext) {
+        await ctx.sendChatAction('upload_document');
+
+        return this.telegramService.onGetBackupCommand(ctx);
     }
 
     @Command('debug')

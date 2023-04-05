@@ -1,6 +1,7 @@
 {
   "start": "init bot",
-  "manage": "audios manage (admins only)",
+  "manage": "manage audios (admins only)",
+  "get_backup": "download all audios with archive (admins only)",
   "top": "top audios",
   "help": "get help",
   "debug": "debug info"

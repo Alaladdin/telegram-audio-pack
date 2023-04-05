@@ -3,7 +3,7 @@ import { I18nService } from 'nestjs-i18n';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { I18nTranslations } from '@/generated/localization.generated';
-import { chain, map, orderBy, formatDate, sleep } from '@utils';
+import { chain, map, orderBy, formatDate, sleep, getZip, each } from '@utils';
 import { Markup, Telegraf } from 'telegraf';
 import {
     AudioContext,
@@ -16,7 +16,9 @@ import {
 } from './interfaces';
 import {
     ADMINS_IDS,
+    BACKUP_FILE_NAME,
     BOT_COMMANDS_LIST,
+    DATABASE_FILE_NAME,
     INLINE_QUERY_LIMIT,
     RENAME_AUDIO_SCENE_ID,
     TOP_AUDIOS_LIMIT,
@@ -25,7 +27,7 @@ import { FfmpegService } from '@/modules/ffmpeg/ffmpeg.service';
 import { EMPTY_VALUE } from '@constants';
 import { AudioService } from '@/modules/audio/audio.service';
 import { AudioModel } from '@/modules/audio/audio.model';
-import { getDisplayName, getEscapedMessage, getMappedAudio } from './utils';
+import { getEscapedMessage, getMappedAudio } from './utils';
 import { ExtraEditMessageCaption } from 'telegraf/typings/telegram-types';
 import { InlineQueryResultCachedVoice } from 'typegram/inline';
 
@@ -57,8 +59,7 @@ export class TelegramService {
     }
 
     async onStartCommand(ctx: MessageContext) {
-        const displayName = getDisplayName(ctx.from);
-        const message = ctx.$t('replies.greeting', { args: { name: displayName } });
+        const message = ctx.$t('replies.greeting', { args: { name: ctx.displayName } });
 
         await ctx.$replyWithMDCode(message);
     }
@@ -118,7 +119,7 @@ export class TelegramService {
         }
     }
 
-    async onManageCommand(ctx: Context) {
+    async onManageCommand(ctx: MessageContext) {
         const rawAudiosList = await this.audioService.getAudiosList();
         const audiosList = orderBy(rawAudiosList, ['createdAt'], ['desc']);
 
@@ -144,10 +145,38 @@ export class TelegramService {
                     },
                 );
 
-                await sleep(0.3);
+                await sleep(1);
             }
         } else {
             await ctx.$sendMessageWithMD('No audios');
+        }
+    }
+
+    async onGetBackupCommand(ctx: MessageContext) {
+        const audiosList = await this.audioService.getAudiosList();
+
+        if (audiosList.length) {
+            const zip = getZip();
+            const message = ctx.$t('replies.data_may_be_not_actual');
+
+            zip.addFile(DATABASE_FILE_NAME, Buffer.from(JSON.stringify(audiosList)));
+
+            each(audiosList, (audio) => {
+                zip.addFile(`${audio.name}.ogg`, audio.content);
+            });
+
+            await ctx.sendDocument(
+                {
+                    filename: BACKUP_FILE_NAME,
+                    source: zip.toBuffer(),
+                },
+                {
+                    caption: getEscapedMessage(`\`${message}\``),
+                    parse_mode: 'MarkdownV2',
+                },
+            );
+        } else {
+            await ctx.$replyWithMDCode(ctx.$t('base.not_found'));
         }
     }
 

@@ -2,5 +2,6 @@
   "greeting": "Приветствую, {name}",
   "audios_list": "Список аудиозаписей",
   "top_audios": "Топ {count} аудиозаписей",
-  "used_times": "Использовано раз: {count}"
+  "used_times": "Использовано раз: {count}",
+  "data_may_be_not_actual": "Данные могут быть не актуальными - используется кэш"
 }
