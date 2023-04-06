@@ -2,9 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from 'nestjs-typegoose';
 import { AudioEntity } from './entities';
 import { ReturnModelType } from '@typegoose/typegoose/lib/types';
-import { getSubtractedDate, ms, some, debounce } from '@utils';
+import { getSubtractedDate, ms, some, debounce, map } from '@utils';
 import { AudioModel } from '@/modules/audio/audio.model';
-import { GetAudioParams, GetAudiosListParams, UpdateAudioParams } from '@/modules/audio/audio.interfaces';
+import {
+    AudioModelCached,
+    GetAudioParams,
+    GetAudiosListParams,
+    UpdateAudioParams,
+} from '@/modules/audio/audio.interfaces';
 import { CreateAudioDto } from '@/modules/audio/dto';
 import { AUDIOS_LIST_CACHE_KEY, CACHE_PREFIX, NO_CLEAR_CACHE_ON_UPDATE_KEYS } from '@/modules/audio/audio.constants';
 import { CacheService } from '@/modules/cache/cache.service';
@@ -57,7 +62,7 @@ export class AudioService {
     }
 
     async getAudiosList(params: GetAudiosListParams = {}): Promise<AudioModel[]> {
-        const cachedValue = await this.cacheService.get<AudioModel[]>(AUDIOS_LIST_CACHE_KEY);
+        const cachedValue = await this.cacheService.get<AudioModelCached[]>(AUDIOS_LIST_CACHE_KEY);
 
         if (!cachedValue) {
             const audiosList: AudioModel[] = await this.audioRepository
@@ -71,7 +76,11 @@ export class AudioService {
             return audiosList;
         }
 
-        return cachedValue;
+        // todo fix this
+        return map(cachedValue, (audio) => ({
+            ...audio,
+            content: Buffer.from(audio.content.data),
+        }));
     }
 
     async updateCaches() {
