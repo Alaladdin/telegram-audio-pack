@@ -11,6 +11,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         ConfigModule.forRoot({
             envFilePath: getEnvFilePath(),
             cache: true,
+            isGlobal: true,
         }),
         TypegooseModule.forRootAsync({
             imports: [ConfigModule],
