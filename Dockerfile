@@ -1,4 +1,4 @@
-FROM node:16-slim as builder
+FROM node:18-slim as builder
 
 WORKDIR /usr/src/app
 
@@ -11,7 +11,7 @@ COPY . .
 
 RUN yarn build
 
-FROM node:16-slim as production-builder
+FROM node:18-slim as production-builder
 
 WORKDIR /usr/src/app
 
@@ -20,7 +20,7 @@ COPY --from=builder /usr/src/app/package.json ./
 
 RUN yarn install --frozen-lockfile --link-duplicates --network-timeout 1000000 --production
 
-FROM node:16-slim
+FROM node:18-slim
 
 WORKDIR /usr/src/app
 

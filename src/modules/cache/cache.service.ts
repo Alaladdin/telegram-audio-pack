@@ -1,34 +1,48 @@
 import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cache, Milliseconds } from 'cache-manager';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CacheService {
     private readonly logger = new Logger(CacheService.name);
+    private readonly cachePrefix = '';
 
-    constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+    constructor(
+        @Inject(CACHE_MANAGER) private cacheManager: Cache, // todo disable prettier here
+        private readonly configService: ConfigService,
+    ) {
+        this.cachePrefix = this.configService.get('npm_package_name') || '';
+    }
 
     async get<T>(key: string) {
-        this.logger.verbose(`[GET]: ${key}`);
+        const cacheKey = this.getCacheKey(key);
 
-        return this.cacheManager.get<T>(key);
+        this.logger.verbose(`[GET]: ${cacheKey}`);
+
+        return this.cacheManager.get<T>(cacheKey);
     }
 
     async set(key: string, value: unknown, ttl?: Milliseconds) {
-        this.logger.verbose(`[SET]: ${key}:${value}, ttl:${ttl}`);
+        const cacheKey = this.getCacheKey(key);
+
+        this.logger.verbose(`[SET]: ${cacheKey}:${value}, ttl:${ttl}`);
 
         if (value !== undefined) {
-            await this.cacheManager.set(key, value, ttl);
+            await this.cacheManager.set(cacheKey, value, ttl);
         }
     }
 
     async delete(key: string) {
-        this.logger.verbose(`[DELETE]: ${key}`);
+        const cacheKey = this.getCacheKey(key);
 
-        await this.cacheManager.del(key);
+        this.logger.verbose(`[DELETE]: ${cacheKey}`);
+
+        await this.cacheManager.del(cacheKey);
     }
 
     async deleteFolder(prefix?: string) {
-        const keys = await this.cacheManager.store.keys(prefix);
+        const cacheKey = this.getCacheKey(prefix || '');
+        const keys = await this.cacheManager.store.keys(cacheKey);
 
         this.logger.verbose(`[DELETE_FOLDER]: ${prefix}`);
 
@@ -41,5 +55,9 @@ export class CacheService {
         this.logger.verbose(`[DELETE_ALL]`);
 
         await this.cacheManager.reset();
+    }
+
+    private getCacheKey(key: string) {
+        return [this.cachePrefix, key].join(':');
     }
 }
