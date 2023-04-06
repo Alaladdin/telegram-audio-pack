@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from 'nestjs-typegoose';
 import { AudioEntity } from './entities';
 import { ReturnModelType } from '@typegoose/typegoose/lib/types';
-import { getSubtractedDate, some } from '@utils';
+import { getSubtractedDate, ms, some, debounce } from '@utils';
 import { AudioModel } from '@/modules/audio/audio.model';
 import { GetAudioParams, GetAudiosListParams, UpdateAudioParams } from '@/modules/audio/audio.interfaces';
 import { CreateAudioDto } from '@/modules/audio/dto';
@@ -13,7 +13,6 @@ import { Nullable } from '@types';
 @Injectable()
 export class AudioService {
     private readonly logger = new Logger(AudioService.name);
-    private isUpdatingCaches = false;
 
     constructor(
         @InjectModel(AudioEntity) private readonly audioRepository: ReturnModelType<typeof AudioEntity>,
@@ -76,22 +75,22 @@ export class AudioService {
     }
 
     async updateCaches() {
-        if (!this.isUpdatingCaches) {
-            const start = Date.now();
+        debounce(this._updateCaches.bind(this), ms('1min'))();
+    }
 
-            this.logger.debug('Updating caches');
-            this.isUpdatingCaches = true;
+    private async _updateCaches() {
+        const start = Date.now();
 
-            this.cacheService
-                .deleteAll()
-                .then(() => this.getAudiosList())
-                .finally(() => {
-                    this.isUpdatingCaches = false;
-                    this.logger.debug(`Caches updated: ${Date.now() - start}ms`);
-                });
-        } else {
-            this.logger.debug('Caches already updating. Skipping');
-        }
+        this.logger.debug('Updating caches');
+
+        this.audioRepository
+            .find({})
+            .then((audiosList) => {
+                return this.cacheService.set(AUDIOS_LIST_CACHE_KEY, audiosList);
+            })
+            .finally(() => {
+                this.logger.debug(`Caches updated: ${Date.now() - start}ms`);
+            });
     }
 
     async cleanUpAudios() {
