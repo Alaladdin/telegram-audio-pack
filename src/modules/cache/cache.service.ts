@@ -12,7 +12,7 @@ export class CacheService {
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly configService: ConfigService,
     ) {
-        this.cachePrefix = this.configService.get('npm_package_name') || '';
+        this.cachePrefix = this.configService.get('CACHE_PREFIX') || this.configService.get('npm_package_name') || '';
     }
 
     async get<T>(key: string) {
