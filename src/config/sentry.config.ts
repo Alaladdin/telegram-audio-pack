@@ -9,7 +9,6 @@ export const getSentryConfig = (configService: ConfigService): SentryModuleOptio
         enabled: environment === 'production',
         debug: environment !== 'production',
         environment: environment,
-        logLevels: ['debug'],
         tracesSampleRate: 1.0,
         release: configService.get('npm_package_version'),
         beforeSend: (e) => {

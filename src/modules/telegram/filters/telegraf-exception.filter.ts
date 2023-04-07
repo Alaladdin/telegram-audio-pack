@@ -1,11 +1,11 @@
-import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import { TelegrafArgumentsHost } from 'nestjs-telegraf';
 import { Context } from '../interfaces';
-import * as Sentry from '@sentry/node';
+import { AnalyticsService } from '@/modules/analytics/analytics.service';
 
 @Catch()
 export class TelegrafExceptionFilter implements ExceptionFilter {
-    private logger = new Logger(TelegrafExceptionFilter.name);
+    private readonly analyticsService = new AnalyticsService();
 
     async catch(exception: Error, host: ArgumentsHost): Promise<void> {
         const telegrafHost = TelegrafArgumentsHost.create(host);
@@ -13,8 +13,7 @@ export class TelegrafExceptionFilter implements ExceptionFilter {
         const user = ctx.from;
         const errorMessage = ctx.$t('errors.base_error', { args: { message: exception.message } });
 
-        this.logger.error(`${ctx.updateType}: ${errorMessage}`);
-        Sentry.captureException(exception, {
+        this.analyticsService.reportCrash(exception, {
             user: user && {
                 ...user,
                 id: user.id.toString(),

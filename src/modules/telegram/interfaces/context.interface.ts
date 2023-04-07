@@ -33,3 +33,11 @@ export interface MessageContext extends tgContext<Update.MessageUpdate>, BaseCon
 export interface InlineQueryContext extends tgContext<Update.InlineQueryUpdate>, BaseContext {}
 export interface ChosenInlineResultContext extends tgContext<Update.ChosenInlineResultUpdate>, BaseContext {}
 export interface SceneContext extends Scenes.SceneContext, BaseContext {}
+export interface UniversalContext
+    extends tgContext<
+            | Update.MessageUpdate<Message.TextMessage>
+            | Update.InlineQueryUpdate
+            | Update.ChosenInlineResultUpdate
+            | Update.CallbackQueryUpdate<CallbackQueryWithData<CallbackQueryUpdateType>>
+        >,
+        BaseContext {}

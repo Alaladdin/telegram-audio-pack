@@ -26,7 +26,7 @@ export class CacheService {
     async set(key: string, value: unknown, ttl?: Milliseconds) {
         const cacheKey = this.getCacheKey(key);
 
-        this.logger.verbose(`[SET]: ${cacheKey}:${value}, ttl:${ttl}`);
+        this.logger.verbose(`[SET]: ${cacheKey}, ttl:${ttl}`);
 
         if (value !== undefined) {
             await this.cacheManager.set(cacheKey, value, ttl);

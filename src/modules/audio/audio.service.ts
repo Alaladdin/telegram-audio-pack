@@ -14,6 +14,7 @@ import { CreateAudioDto } from '@/modules/audio/dto';
 import { AUDIOS_LIST_CACHE_KEY, CACHE_PREFIX, NO_CLEAR_CACHE_ON_UPDATE_KEYS } from '@/modules/audio/audio.constants';
 import { CacheService } from '@/modules/cache/cache.service';
 import { Nullable } from '@types';
+import { AnalyticsService } from '@/modules/analytics/analytics.service';
 
 @Injectable()
 export class AudioService {
@@ -21,7 +22,8 @@ export class AudioService {
 
     constructor(
         @InjectModel(AudioEntity) private readonly audioRepository: ReturnModelType<typeof AudioEntity>,
-        private cacheService: CacheService,
+        private readonly analyticsService: AnalyticsService,
+        private readonly cacheService: CacheService,
     ) {}
 
     async createAudio(audio: CreateAudioDto): Promise<AudioModel> {
@@ -84,11 +86,15 @@ export class AudioService {
     }
 
     async updateCaches() {
-        debounce(this._updateCaches.bind(this), ms('1min'))();
+        debounce(this._updateCaches.bind(this), ms('1min'), { leading: true })();
     }
 
     private async _updateCaches() {
         const start = Date.now();
+        const transaction = this.analyticsService.startTransaction({
+            name: 'UPDATE_CACHES',
+            op: 'CRON',
+        });
 
         this.logger.debug('Updating caches');
 
@@ -99,6 +105,7 @@ export class AudioService {
             })
             .finally(() => {
                 this.logger.debug(`Caches updated: ${Date.now() - start}ms`);
+                transaction.finish();
             });
     }
 
