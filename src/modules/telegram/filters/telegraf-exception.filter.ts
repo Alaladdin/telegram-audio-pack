@@ -1,6 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
 import { TelegrafArgumentsHost } from 'nestjs-telegraf';
 import { Context } from '../interfaces';
+import * as Sentry from '@sentry/node';
 
 @Catch()
 export class TelegrafExceptionFilter implements ExceptionFilter {
@@ -9,16 +10,28 @@ export class TelegrafExceptionFilter implements ExceptionFilter {
     async catch(exception: Error, host: ArgumentsHost): Promise<void> {
         const telegrafHost = TelegrafArgumentsHost.create(host);
         const ctx = telegrafHost.getContext<Context>();
-        const updateType = ctx.updateType;
+        const user = ctx.from;
         const errorMessage = ctx.$t('errors.base_error', { args: { message: exception.message } });
 
-        this.logger.error(`${updateType}: ${errorMessage}`);
+        this.logger.error(`${ctx.updateType}: ${errorMessage}`);
+        Sentry.captureException(exception, {
+            user: user && {
+                ...user,
+                id: user.id.toString(),
+                displayName: ctx.displayName,
+                isAdmin: ctx.isAdmin,
+            },
+            extra: {
+                updateType: ctx.updateType,
+                chat: ctx.chat,
+            },
+        });
 
-        if (updateType === 'message') {
+        if (ctx.updateType === 'message') {
             await ctx.$replyWithMDCode(errorMessage);
         }
 
-        if (updateType === 'callback_query') {
+        if (ctx.updateType === 'callback_query') {
             await ctx.answerCbQuery(errorMessage);
         }
     }

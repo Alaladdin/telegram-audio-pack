@@ -1,7 +1,8 @@
-import { TelegramAudio, TelegramUser } from '@/modules/telegram/interfaces';
+import { Context, TelegramAudio, TelegramUser } from '@/modules/telegram/interfaces';
 import { CHARS_TO_MD_ESCAPE, UNKNOWN_USER_NAME } from '@/modules/telegram/telegram.constants';
 import { CreateAudioDto } from '@/modules/audio/dto';
 import { map } from '@utils';
+import { User } from 'typegram';
 
 export const getMappedAudio = (audio: TelegramAudio): CreateAudioDto['voice'] => ({
     fileId: audio.file_id,
@@ -9,6 +10,13 @@ export const getMappedAudio = (audio: TelegramAudio): CreateAudioDto['voice'] =>
     size: audio.file_size,
     mimeType: audio.mime_type,
     duration: audio.duration,
+});
+
+export const getMappedSentryUser = (ctx: Context, user?: User) => ({
+    ...user,
+    id: user && user.id.toString(),
+    displayName: ctx.displayName,
+    isAdmin: ctx.isAdmin,
 });
 
 export const getDisplayName = (user?: TelegramUser) => {

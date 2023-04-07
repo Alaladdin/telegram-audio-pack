@@ -2,9 +2,11 @@ import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } fr
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { chain } from '@utils';
+import * as Sentry from '@sentry/node';
 import { TelegrafExecutionContext } from 'nestjs-telegraf';
 import { Context } from '@/modules/telegram/interfaces';
-import { getDisplayName } from '@/modules/telegram/utils';
+import { getDisplayName, getMappedSentryUser } from '@/modules/telegram/utils';
+import { pick } from 'lodash';
 
 type LogOption = { title: string; value?: string | number | boolean } | { valueGetter: () => string };
 
@@ -16,6 +18,14 @@ export class TelegramLoggerInterceptor implements NestInterceptor {
         const start = Date.now();
         const telegrafExecutionContext = TelegrafExecutionContext.create(context);
         const ctx = telegrafExecutionContext.getContext<Context>();
+        const transaction = Sentry.startTransaction({
+            name: ctx.updateType,
+            op: ctx.updateType,
+            data: {
+                ...pick(ctx, ['chat', 'message', 'updateType', 'callbackQuery', 'inlineQuery']),
+                user: getMappedSentryUser(ctx, ctx.from),
+            },
+        });
 
         return next.handle().pipe(
             tap(() => {
@@ -49,6 +59,8 @@ export class TelegramLoggerInterceptor implements NestInterceptor {
                     .join(' — ');
 
                 this.logger.verbose(message);
+
+                transaction.finish();
             }),
         );
     }
