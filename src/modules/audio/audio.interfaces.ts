@@ -23,8 +23,5 @@ export interface GetAudiosListParams {
 }
 
 export interface AudioModelCached extends Omit<AudioModel, 'content'> {
-    content: {
-        type: 'Buffer';
-        data: ArrayBuffer;
-    };
+    content: ArrayBuffer;
 }

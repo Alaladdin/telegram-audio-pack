@@ -7,8 +7,9 @@ export class CacheService {
     private readonly logger = new Logger(CacheService.name);
     private readonly cachePrefix = '';
 
+    /* prettier-ignore */
     constructor(
-        @Inject(CACHE_MANAGER) private cacheManager: Cache, // todo disable prettier here
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly configService: ConfigService,
     ) {
         this.cachePrefix = this.configService.get('npm_package_name') || '';

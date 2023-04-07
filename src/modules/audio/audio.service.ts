@@ -79,7 +79,7 @@ export class AudioService {
         // todo fix this
         return map(cachedValue, (audio) => ({
             ...audio,
-            content: Buffer.from(audio.content.data),
+            content: Buffer.from(audio.content),
         }));
     }
 

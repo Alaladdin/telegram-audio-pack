@@ -328,7 +328,7 @@ export class TelegramService {
             filter: { _id: audioId },
             update: { deletedAt: Date.now() },
         });
-        let message = ctx.$t('base.not_found');
+        let message = `\`${ctx.$t('base.not_found')}\``;
         const messageExtra: ExtraEditMessageCaption = { parse_mode: 'MarkdownV2' };
 
         if (deletedAudio) {
@@ -350,7 +350,7 @@ export class TelegramService {
             filter: { _id: audioId },
             update: { deletedAt: null },
         });
-        let message = ctx.$t('base.not_found');
+        let message = `\`${ctx.$t('base.not_found')}\``;
         const messageExtra: ExtraEditMessageCaption = { parse_mode: 'MarkdownV2' };
 
         if (updatedAudio) {
