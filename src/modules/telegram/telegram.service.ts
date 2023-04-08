@@ -246,7 +246,7 @@ export class TelegramService {
     async onAudioMessage(ctx: AudioContext) {
         const isFromCurrentBot = ctx.botInfo.id === ctx.message.via_bot?.id;
 
-        if (!isFromCurrentBot) {
+        if ( ctx.isAdmin && !isFromCurrentBot) {
             const message = ctx.$t('actions.save') + '?';
             const inlineKeyboard = Markup.inlineKeyboard([
                 [

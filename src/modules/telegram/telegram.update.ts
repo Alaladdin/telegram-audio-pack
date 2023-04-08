@@ -92,7 +92,6 @@ export class TelegramUpdate {
         return this.telegramService.onDebugCommand(ctx);
     }
 
-    @UseGuards(AdminGuard)
     @On(['voice', 'audio'])
     async onAudio(ctx: AudioContext) {
         await ctx.sendChatAction('typing');
