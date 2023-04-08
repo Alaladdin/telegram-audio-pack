@@ -20,6 +20,7 @@ export const orderBy = _.orderBy;
 export const flatten = _.flatten;
 export const reduce = _.reduce;
 export const debounce = _.debounce;
+export const noop = _.noop;
 
 export const sleep = (sec: number): Promise<void> => {
     return new Promise((resolve) => {

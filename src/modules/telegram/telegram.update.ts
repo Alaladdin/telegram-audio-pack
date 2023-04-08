@@ -102,12 +102,12 @@ export class TelegramUpdate {
     @UseGuards(AdminGuard)
     @On('callback_query')
     async onCallbackQuery(ctx: CallbackQueryContext) {
-        /* prettier-ignore */
         return this.telegramService
             .onCallbackQuery(ctx)
             .finally(() => {
                 ctx.answerCbQuery();
-            });
+            })
+            .catch(noop);
     }
 
     @On('inline_query')
