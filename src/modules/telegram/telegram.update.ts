@@ -95,7 +95,7 @@ export class TelegramUpdate {
     @UseGuards(AdminGuard)
     @On(['voice', 'audio'])
     async onAudio(ctx: AudioContext) {
-        await ctx.sendChatAction('record_voice');
+        await ctx.sendChatAction('typing');
 
         return this.telegramService.onAudioMessage(ctx);
     }

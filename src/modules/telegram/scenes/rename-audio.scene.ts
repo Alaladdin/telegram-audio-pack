@@ -65,6 +65,7 @@ export class RenameAudioScene {
         const notRenamedMessage = ctx.$t('actions.discarded');
         const renamedMessage = ctx.$t('actions.renamed_audio', { args: state });
 
+        await state.onLeave(ctx);
         await ctx.$replyWithMDCode(state.newName ? renamedMessage : notRenamedMessage, {
             reply_markup: { remove_keyboard: true },
         });

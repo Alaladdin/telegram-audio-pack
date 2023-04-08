@@ -255,7 +255,7 @@ export class TelegramService {
                 ],
             ]);
 
-            await ctx.$replyWithMD(message, inlineKeyboard);
+            await ctx.$replyWithMDCode(message, inlineKeyboard);
         }
     }
 
@@ -292,11 +292,11 @@ export class TelegramService {
     private async onSaveAudio(ctx: CallbackQueryContext) {
         const query = ctx.callbackQuery;
         const replyMessage = query.message.reply_to_message;
-        const audio = replyMessage.voice || replyMessage.audio;
-        const audioUrl = await ctx.telegram.getFileLink(audio.file_id);
+        const audio = replyMessage.voice || replyMessage.audio || replyMessage.video;
+        const audioLink = await ctx.telegram.getFileLink(audio.file_id);
         const audioTitle = replyMessage.caption || `${Date.now()}`;
         const fileBuffer = await this.ffmpegService.getCleanAudio({
-            url: audioUrl.href,
+            url: audioLink.href,
             title: audioTitle,
         });
 
@@ -342,7 +342,35 @@ export class TelegramService {
     }
 
     private async onRenameAudio(ctx: SceneContext, audioId: string) {
-        await ctx.scene.enter(RENAME_AUDIO_SCENE_ID, { audioId });
+        await ctx.scene.enter(RENAME_AUDIO_SCENE_ID, {
+            audioId,
+            callbackQuery: ctx.callbackQuery,
+            onLeave: this.afterRenameAudio,
+        });
+    }
+
+    // todo types
+    private async afterRenameAudio(ctx: SceneContext) {
+        const { callbackQuery, newName } = ctx.scene.state as any;
+        const { id: inlineMessageId, message } = callbackQuery;
+        const audioLink = await ctx.telegram.getFileLink(message.audio.file_id);
+
+        await ctx.telegram.editMessageMedia(
+            message.chat.id,
+            message.message_id,
+            inlineMessageId,
+            {
+                type: 'audio',
+                title: newName,
+                media: { url: audioLink.href },
+                duration: message.audio.duration,
+                caption: message.caption,
+                caption_entities: message.caption_entities,
+            },
+            {
+                reply_markup: message.reply_markup,
+            },
+        );
     }
 
     private async onRestoreAudio(ctx: CallbackQueryContext, audioId: string) {
