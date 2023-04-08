@@ -255,6 +255,7 @@ export class TelegramService {
                 ],
             ]);
 
+            await ctx.sendChatAction('typing');
             await ctx.$replyWithMDCode(message, inlineKeyboard);
         }
     }

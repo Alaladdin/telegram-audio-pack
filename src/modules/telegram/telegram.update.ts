@@ -95,8 +95,6 @@ export class TelegramUpdate {
 
     @On(['voice', 'audio'])
     async onAudio(ctx: AudioContext) {
-        await ctx.sendChatAction('typing');
-
         return this.telegramService.onAudioMessage(ctx);
     }
 
