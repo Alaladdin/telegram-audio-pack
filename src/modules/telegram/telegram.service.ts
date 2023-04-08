@@ -412,7 +412,7 @@ export class TelegramService {
     }
 
     async onInlineQuery(ctx: InlineQueryContext) {
-        const searchText = ctx.inlineQuery.query;
+        const searchText = ctx.inlineQuery.query.toLowerCase();
         const rawAudios = await this.audioService.getAudiosList();
 
         const audios = chain(rawAudios)
