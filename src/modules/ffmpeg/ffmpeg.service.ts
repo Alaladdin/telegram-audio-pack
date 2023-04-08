@@ -4,6 +4,7 @@ import { path as ffmpegPath } from '@ffmpeg-installer/ffmpeg';
 import { getCleanAudioOptions } from './ffmpeg.interface';
 import { flatten, getTempFile } from '@utils';
 import * as fs from 'fs/promises';
+import { FileResult } from 'tmp-promise';
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -12,13 +13,17 @@ export class FfmpegService {
     private logger = new Logger(FfmpegService.name);
 
     async getCleanAudio(options: getCleanAudioOptions): Promise<Buffer> {
-        const filePath = await this.getCleanAudioPath(options);
+        const file = await this.getCleanAudioPath(options);
 
-        return fs.readFile(filePath);
+        return fs
+            .readFile(file.path) // prettier-ignore
+            .finally(() => {
+                return file.cleanup();
+            });
     }
 
-    private async getCleanAudioPath({ url, title }: getCleanAudioOptions): Promise<string> {
-        const tempFilePath = await getTempFile();
+    private async getCleanAudioPath({ url, title }: getCleanAudioOptions): Promise<FileResult> {
+        const tempFile = await getTempFile();
         const audioTitle = this.getFileName(title);
         const outputOptions = flatten([
             ['-safe', '0'],
@@ -46,9 +51,9 @@ export class FfmpegService {
                 })
                 .on('end', () => {
                     this.logger.log('Command executed successfully');
-                    resolve(tempFilePath);
+                    resolve(tempFile);
                 })
-                .save(tempFilePath);
+                .save(tempFile.path);
         });
     }
 

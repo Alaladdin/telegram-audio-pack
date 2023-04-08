@@ -37,11 +37,19 @@ export const getBufferHash = (buffer: Buffer) => {
     return crypto.createHash('sha256').update(buffer).digest('hex');
 };
 
-export const getTempDir = (): Promise<string> => tmp.dir({ prefix: APP_NAME }).then((result) => result.path);
-export const getTempFile = async (): Promise<string> => {
+export const getTempDir = () => tmp.dir({ prefix: APP_NAME });
+export const getTempFile = async () => {
     const dir = await getTempDir();
 
-    return tmp.file({ dir }).then((result) => result.path);
+    return tmp
+        .file({ dir: dir.path }) // prettier-ignore
+        .then((file) => ({
+            ...file,
+            cleanup: async () => {
+                await file.cleanup();
+                await dir.cleanup();
+            },
+        }));
 };
 
 export const ms = (value: StringValue) => _ms(value);
