@@ -246,7 +246,7 @@ export class TelegramService {
     async onAudioMessage(ctx: AudioContext) {
         const isFromCurrentBot = ctx.botInfo.id === ctx.message.via_bot?.id;
 
-        if ( ctx.isAdmin && !isFromCurrentBot) {
+        if (ctx.isAdmin && !isFromCurrentBot) {
             const message = ctx.$t('actions.save') + '?';
             const inlineKeyboard = Markup.inlineKeyboard([
                 [
@@ -292,7 +292,7 @@ export class TelegramService {
     private async onSaveAudio(ctx: CallbackQueryContext) {
         const query = ctx.callbackQuery;
         const replyMessage = query.message.reply_to_message;
-        const audio = replyMessage.voice || replyMessage.audio || replyMessage.video;
+        const audio = replyMessage.voice || replyMessage.audio;
         const audioLink = await ctx.telegram.getFileLink(audio.file_id);
         const audioTitle = replyMessage.caption || `${Date.now()}`;
         const fileBuffer = await this.ffmpegService.getCleanAudio({
