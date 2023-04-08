@@ -17,6 +17,7 @@ import { I18nTranslations } from '@/generated/localization.generated';
 import { TelegrafExceptionFilter } from '@/modules/telegram/filters';
 import { BOT_NAME } from './telegram.constants';
 import { AudioService } from '@/modules/audio/audio.service';
+import { noop } from '@utils';
 
 @Update()
 @UseInterceptors(TelegramLoggerInterceptor)
