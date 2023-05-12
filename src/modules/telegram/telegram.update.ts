@@ -1,5 +1,5 @@
 import { Logger, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
-import { InjectBot, Update, Command, On } from 'nestjs-telegraf';
+import { InjectBot, Update, Command, On, TelegrafException } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 import { I18nService } from 'nestjs-i18n';
 import {
@@ -63,12 +63,11 @@ export class TelegramUpdate {
         return this.telegramService.onTopCommand(ctx);
     }
 
-    @UseGuards(AdminGuard, PrivateChatGuard)
-    @Command('manage')
-    async onManageCommand(ctx: MessageContext) {
+    @Command('list')
+    async onListCommand(ctx: MessageContext) {
         await ctx.sendChatAction('typing');
 
-        return this.telegramService.onManageCommand(ctx);
+        return this.telegramService.onListCommand(ctx);
     }
 
     @UseGuards(AdminGuard, PrivateChatGuard)
@@ -98,9 +97,14 @@ export class TelegramUpdate {
         return this.telegramService.onAudioMessage(ctx);
     }
 
-    @UseGuards(AdminGuard)
     @On('callback_query')
     async onCallbackQuery(ctx: CallbackQueryContext) {
+        const queryKey = ctx.callbackQuery.data;
+
+        if (!ctx.isAdmin && queryKey !== 'LOAD_MORE_AUDIOS') {
+            throw new TelegrafException(ctx.$t('errors.not_admin'));
+        }
+
         return this.telegramService
             .onCallbackQuery(ctx)
             .finally(() => {

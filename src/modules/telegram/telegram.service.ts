@@ -20,7 +20,7 @@ import {
     BOT_COMMANDS_LIST,
     DATABASE_FILE_NAME,
     INLINE_QUERY_LIMIT,
-    MANAGE_AUDIOS_LIMIT,
+    LIST_AUDIOS_LIMIT,
     RENAME_AUDIO_SCENE_ID,
     TOP_AUDIOS_LIMIT,
 } from './telegram.constants';
@@ -67,6 +67,7 @@ export class TelegramService {
 
     async onHelpCommand(ctx: Context) {
         const message = [`\`- Использование бота: введите\` \`@${ctx.me}\` \`в любом чате\``];
+        const inlineKeyboard = Markup.inlineKeyboard([[Markup.button.switchToChat('@Abuh_bot', '')]]);
 
         if (ctx.isAdmin) {
             message.push(
@@ -77,13 +78,13 @@ export class TelegramService {
                 '`! Протестировано с .ogg/.mp3`',
 
                 '\n*# Удаление/восстановление аудиозаписей*',
-                '`- Управление через команду /manage`',
+                '`- Управление через команду /list`',
                 '`- Удаляются не сразу, а по прошествии 24 часов. В это время можно восстановить файл`',
                 '`- Помеченные для удаления аудиозаписи нельзя использовать для отправки`',
             );
         }
 
-        await ctx.$replyWithMD(message.join('\n'));
+        await ctx.$replyWithMD(message.join('\n'), inlineKeyboard);
     }
 
     async onTopCommand(ctx: MessageContext) {
@@ -120,19 +121,19 @@ export class TelegramService {
         }
     }
 
-    async onManageCommand(ctx: MessageContext) {
+    async onListCommand(ctx: MessageContext) {
         await ctx.$sendMessageWithMD(ctx.$t('replies.audios_list'));
-        await this.handleManage(ctx, 0);
+        await this.handleListCommand(ctx, 0);
     }
 
-    private async handleManage(ctx: Context, offset: number) {
+    private async handleListCommand(ctx: Context, offset: number) {
         const rawAudiosList = await this.audioService.getAudiosList();
-        const totalPages = Math.ceil(rawAudiosList.length / MANAGE_AUDIOS_LIMIT);
+        const totalPages = Math.ceil(rawAudiosList.length / LIST_AUDIOS_LIMIT);
         const currentPage = offset + 1;
-        const startIndex = offset * MANAGE_AUDIOS_LIMIT;
+        const startIndex = offset * LIST_AUDIOS_LIMIT;
         const audiosList = chain(rawAudiosList)
             .orderBy(['createdAt'], ['desc'])
-            .slice(startIndex, startIndex + MANAGE_AUDIOS_LIMIT)
+            .slice(startIndex, startIndex + LIST_AUDIOS_LIMIT)
             .value();
 
         if (audiosList.length) {
@@ -286,7 +287,7 @@ export class TelegramService {
         }
 
         if (key === 'LOAD_MORE_AUDIOS') {
-            await this.handleManage(ctx, +payload);
+            await this.handleListCommand(ctx, +payload);
         }
     }
 
@@ -398,6 +399,7 @@ export class TelegramService {
         const deletedAtDate = audio.deletedAt ? formatDate(audio.deletedAt) : EMPTY_VALUE;
         const deletedAtText = ctx.$t('base.deletedAt', { args: { date: deletedAtDate } });
         const message = map([usedTimesText, deletedAtText], (message) => `\`${message}\``).join('\n');
+        const needKeyboard = ctx.isAdmin && ctx.chat?.type === 'private';
 
         if (audio.deletedAt) {
             inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.restore'), `RESTORE_AUDIO:${audio._id}`));
@@ -408,7 +410,7 @@ export class TelegramService {
 
         return {
             message: getEscapedMessage(message),
-            inlineKeyboard: [inlineKeyboard],
+            inlineKeyboard: needKeyboard ? [inlineKeyboard] : [],
         };
     }
 
