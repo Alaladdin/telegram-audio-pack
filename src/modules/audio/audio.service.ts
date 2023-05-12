@@ -34,7 +34,7 @@ export class AudioService {
         return newAudio.toObject();
     }
 
-    async updateAudio(params: UpdateAudioParams): Promise<AudioModel> {
+    async updateAudio(params: UpdateAudioParams): Promise<Nullable<AudioModel>> {
         const updateString = JSON.stringify(params.update);
         const needToClearCache = some(NO_CLEAR_CACHE_ON_UPDATE_KEYS, (key) => !updateString.includes(key));
 
@@ -50,7 +50,7 @@ export class AudioService {
         const cachedValue = await this.cacheService.get<AudioModel>(cacheKey);
 
         if (!cachedValue) {
-            const audio: AudioModel = await this.audioRepository
+            const audio: Nullable<AudioModel> = await this.audioRepository
                 .findOne(params.filter)
                 .select(params.select || {})
                 .lean();
