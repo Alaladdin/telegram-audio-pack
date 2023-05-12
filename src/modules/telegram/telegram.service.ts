@@ -67,7 +67,7 @@ export class TelegramService {
 
     async onHelpCommand(ctx: Context) {
         const message = [`\`- Использование бота: введите\` \`@${ctx.me}\` \`в любом чате\``];
-        const inlineKeyboard = Markup.inlineKeyboard([[Markup.button.switchToChat('@Abuh_bot', '')]]);
+        const inlineKeyboard = Markup.inlineKeyboard([[Markup.button.switchToChat(`@${ctx.me}`, '')]]);
 
         if (ctx.isAdmin) {
             message.push(
