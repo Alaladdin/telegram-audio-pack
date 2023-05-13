@@ -394,23 +394,26 @@ export class TelegramService {
     }
 
     private getAudioForListInfo(ctx: Context, audio: AudioModel) {
-        const inlineKeyboard: ReturnType<typeof Markup.button.callback>[] = [];
         const usedTimesText = ctx.$t('replies.used_times', { args: { count: audio.usedTimes } });
         const deletedAtDate = audio.deletedAt ? formatDate(audio.deletedAt) : EMPTY_VALUE;
         const deletedAtText = ctx.$t('base.deletedAt', { args: { date: deletedAtDate } });
         const message = map([usedTimesText, deletedAtText], (message) => `\`${message}\``).join('\n');
         const needKeyboard = ctx.isAdmin && ctx.chat?.type === 'private';
+        const inlineKeyboard: ReturnType<typeof Markup.button.callback | typeof Markup.button.switchToChat>[][] = [];
 
         if (audio.deletedAt) {
-            inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.restore'), `RESTORE_AUDIO:${audio._id}`));
+            inlineKeyboard.push([Markup.button.callback(ctx.$t('actions.restore'), `RESTORE_AUDIO:${audio._id}`)]);
         } else {
-            inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.rename'), `RENAME_AUDIO:${audio._id}`));
-            inlineKeyboard.push(Markup.button.callback(ctx.$t('actions.delete'), `DELETE_AUDIO:${audio._id}`));
+            inlineKeyboard.push([
+                Markup.button.callback(ctx.$t('actions.rename'), `RENAME_AUDIO:${audio._id}`),
+                Markup.button.callback(ctx.$t('actions.delete'), `DELETE_AUDIO:${audio._id}`),
+            ]);
+            inlineKeyboard.push([Markup.button.switchToChat(`@${ctx.me}`, audio.name)]);
         }
 
         return {
             message: getEscapedMessage(message),
-            inlineKeyboard: needKeyboard ? [inlineKeyboard] : [],
+            inlineKeyboard: needKeyboard ? inlineKeyboard : [],
         };
     }
 
