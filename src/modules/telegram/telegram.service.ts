@@ -398,8 +398,9 @@ export class TelegramService {
         const deletedAtDate = audio.deletedAt ? formatDate(audio.deletedAt) : EMPTY_VALUE;
         const deletedAtText = ctx.$t('base.deletedAt', { args: { date: deletedAtDate } });
         const message = map([usedTimesText, deletedAtText], (message) => `\`${message}\``).join('\n');
-        const needKeyboard = ctx.isAdmin && ctx.chat?.type === 'private';
+        const canModify = ctx.isAdmin && ctx.chat?.type === 'private';
         const inlineKeyboard: ReturnType<typeof Markup.button.callback | typeof Markup.button.switchToChat>[][] = [];
+        const switchToChatButton = [Markup.button.switchToChat(`@${ctx.me}`, audio.name)];
 
         if (audio.deletedAt) {
             inlineKeyboard.push([Markup.button.callback(ctx.$t('actions.restore'), `RESTORE_AUDIO:${audio._id}`)]);
@@ -408,12 +409,12 @@ export class TelegramService {
                 Markup.button.callback(ctx.$t('actions.rename'), `RENAME_AUDIO:${audio._id}`),
                 Markup.button.callback(ctx.$t('actions.delete'), `DELETE_AUDIO:${audio._id}`),
             ]);
-            inlineKeyboard.push([Markup.button.switchToChat(`@${ctx.me}`, audio.name)]);
+            inlineKeyboard.push(switchToChatButton);
         }
 
         return {
             message: getEscapedMessage(message),
-            inlineKeyboard: needKeyboard ? inlineKeyboard : [],
+            inlineKeyboard: canModify ? inlineKeyboard : [switchToChatButton],
         };
     }
 
