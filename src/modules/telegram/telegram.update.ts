@@ -101,7 +101,7 @@ export class TelegramUpdate {
     async onCallbackQuery(ctx: CallbackQueryContext) {
         const queryKey = ctx.callbackQuery.data;
 
-        if (!ctx.isAdmin && queryKey !== 'LOAD_MORE_AUDIOS') {
+        if (!ctx.isAdmin && !queryKey.includes('LOAD_MORE_AUDIOS')) {
             throw new TelegrafException(ctx.$t('errors.not_admin'));
         }
 
