@@ -50,7 +50,7 @@ export class RenameAudioScene {
             });
 
             if (newAudio) {
-                state.newName = audioName;
+                state.renamedAudio = newAudio;
             } else {
                 await ctx.$replyWithMDCode(ctx.$t('base.not_found'));
             }
@@ -63,11 +63,19 @@ export class RenameAudioScene {
     async onSceneLeave(ctx: SceneContext) {
         const state = ctx.scene.state;
         const notRenamedMessage = ctx.$t('actions.discarded');
-        const renamedMessage = ctx.$t('actions.renamed_audio', { args: state });
-
-        await state.onLeave(ctx);
-        await ctx.$replyWithMDCode(state.newName ? renamedMessage : notRenamedMessage, {
-            reply_markup: { remove_keyboard: true },
+        const replyExtra = { reply_markup: { remove_keyboard: true } };
+        const renamedMessage = ctx.$t('actions.renamed_audio', {
+            args: {
+                oldName: state.oldName,
+                newName: state.renamedAudio.name,
+            },
         });
+
+        if (state.renamedAudio) {
+            await state.onRename(ctx);
+            await ctx.$replyWithMDCode(renamedMessage, replyExtra);
+        } else {
+            await ctx.$replyWithMDCode(notRenamedMessage, replyExtra);
+        }
     }
 }

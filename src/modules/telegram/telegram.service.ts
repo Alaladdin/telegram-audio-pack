@@ -19,7 +19,9 @@ import {
     BACKUP_FILE_NAME,
     BOT_COMMANDS_LIST,
     DATABASE_FILE_NAME,
+    INLINE_QUERY_CACHE_TIME,
     INLINE_QUERY_LIMIT,
+    INLINE_QUERY_NEW_LIMIT,
     LIST_AUDIOS_LIMIT,
     RENAME_AUDIO_SCENE_ID,
     TOP_AUDIOS_LIMIT,
@@ -347,15 +349,16 @@ export class TelegramService {
         await ctx.scene.enter(RENAME_AUDIO_SCENE_ID, {
             audioId,
             callbackQuery: ctx.callbackQuery,
-            onLeave: this.afterRenameAudio,
+            onRename: this.afterRenameAudio.bind(this),
         });
     }
 
     // todo types
     private async afterRenameAudio(ctx: SceneContext) {
-        const { callbackQuery, newName } = ctx.scene.state as any;
+        const { callbackQuery, renamedAudio } = ctx.scene.state as any;
         const { id: inlineMessageId, message } = callbackQuery;
         const audioLink = await ctx.telegram.getFileLink(message.audio.file_id);
+        const messageInfo = this.getAudioForListInfo(ctx, renamedAudio);
 
         await ctx.telegram.editMessageMedia(
             message.chat.id,
@@ -363,14 +366,16 @@ export class TelegramService {
             inlineMessageId,
             {
                 type: 'audio',
-                title: newName,
+                title: renamedAudio.name,
                 media: { url: audioLink.href },
                 duration: message.audio.duration,
-                caption: message.caption,
-                caption_entities: message.caption_entities,
+                caption: messageInfo.message,
+                parse_mode: 'MarkdownV2',
             },
             {
-                reply_markup: message.reply_markup,
+                reply_markup: {
+                    inline_keyboard: messageInfo.inlineKeyboard,
+                },
             },
         );
     }
@@ -430,16 +435,30 @@ export class TelegramService {
             })
             .orderBy(['usedTimes'], ['desc'])
             .take(INLINE_QUERY_LIMIT)
-            .map<InlineQueryResultCachedVoice>((audio) => ({
-                type: 'voice',
-                id: audio.voice.fileUniqueId,
-                title: audio.name,
-                voice_file_id: audio.voice.fileId,
-                voice_duration: audio.voice.duration,
-            }))
+            .map(this.formatAudioAsInlineQueryResult)
             .value();
 
-        await ctx.answerInlineQuery(audios, { cache_time: this.isProd ? 300 : 0 });
+        if (!searchText) {
+            const newAudios = chain(rawAudios)
+                .orderBy(['createdAt'], ['desc'])
+                .take(INLINE_QUERY_NEW_LIMIT)
+                .map(this.formatAudioAsInlineQueryResult)
+                .value();
+
+            audios.length = INLINE_QUERY_LIMIT - newAudios.length;
+            audios.unshift(...newAudios);
+        }
+
+        await ctx.answerInlineQuery(audios, { cache_time: this.isProd ? INLINE_QUERY_CACHE_TIME : 0 });
+    }
+
+    private formatAudioAsInlineQueryResult(audio: AudioModel): InlineQueryResultCachedVoice {
+        return {
+            type: 'voice',
+            id: audio.voice.fileUniqueId,
+            title: audio.name,
+            voice_file_id: audio.voice.fileId,
+        };
     }
 
     async onInlineQueryResultChosen(ctx: ChosenInlineResultContext) {
