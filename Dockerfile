@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 COPY package.json ./
 COPY yarn.lock ./
 
-RUN yarn --frozen-lockfile --link-duplicates --network-timeout 1000000
+RUN yarn --link-duplicates --network-timeout 1000000
 
 COPY . .
 
