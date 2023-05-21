@@ -20,7 +20,7 @@ COPY --from=builder /usr/src/app/package.json ./
 COPY --from=builder /usr/src/app/yarn.lock ./
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 
-RUN #yarn --production --ignore-scripts --prefer-offline --network-timeout 1000000
+#RUN #yarn --production --ignore-scripts --prefer-offline --network-timeout 1000000
 
 FROM node:18-slim
 
