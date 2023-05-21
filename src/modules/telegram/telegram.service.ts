@@ -427,7 +427,7 @@ export class TelegramService {
         const searchText = ctx.inlineQuery.query.toLowerCase();
         const rawAudios = await this.audioService.getAudiosList();
 
-        const audios = chain(rawAudios)
+        let audios = chain(rawAudios)
             .reject((audio) => {
                 const audioSearchName = audio.name.toLowerCase();
 
@@ -439,14 +439,17 @@ export class TelegramService {
             .value();
 
         if (!searchText) {
-            const newAudios = chain(rawAudios)
+            const lastCreatedAudios = chain(rawAudios)
                 .orderBy(['createdAt'], ['desc'])
                 .take(INLINE_QUERY_NEW_LIMIT)
                 .map(this.formatAudioAsInlineQueryResult)
                 .value();
 
-            audios.length = INLINE_QUERY_LIMIT - newAudios.length;
-            audios.unshift(...newAudios);
+            audios = chain(audios)
+                .unshift(...lastCreatedAudios)
+                .uniqBy('id')
+                .take(INLINE_QUERY_LIMIT)
+                .value();
         }
 
         await ctx.answerInlineQuery(audios, { cache_time: this.isProd ? INLINE_QUERY_CACHE_TIME : 0 });
